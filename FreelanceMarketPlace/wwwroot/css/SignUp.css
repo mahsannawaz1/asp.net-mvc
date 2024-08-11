@@ -1,0 +1,41 @@
+﻿/* site.css */
+
+/* Style for the container */
+.container { 
+    padding: 30px;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+.form-check-label a {
+    color: #28a745;
+    text-decoration: underline;
+}
+
+    .form-check-label a:hover {
+        color: #218838;
+    }
+
+/* Input field border color on focus */
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+/* Remove border color for the first input field */
+.form-group:first-of-type .form-control {
+    border-color: #ced4da; /* Default border color */
+}
+
+/* Style for error messages */
+.text-danger {
+    color: #dc3545; /* Error color */
+}
