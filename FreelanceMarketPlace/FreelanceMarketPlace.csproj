@@ -10,14 +10,4 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\Contract\" />
-    <Folder Include="Views\Job\" />
-    <Folder Include="Views\Address\" />
-    <Folder Include="Views\Card\" />
-    <Folder Include="Views\Skill\" />
-    <Folder Include="Views\Rating\" />
-    <Folder Include="Views\Proposal\" />
-  </ItemGroup>
-
 </Project>
