@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'poppins-regular';
+    src: url('../fonts/poppins-regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'poppins-bold';
+    src: url('../fonts/poppins-bold.ttf') format('truetype');
+}
 html {
   font-size: 14px;
 }
@@ -18,5 +26,8 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: poppins-regular;
+    font-size:14px;
+   
 }

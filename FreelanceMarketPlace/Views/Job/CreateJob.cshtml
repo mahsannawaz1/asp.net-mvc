@@ -1,5 +1,40 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model FreelanceMarketPlace.Models.Entities.Job
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
+    ViewData["Title"] = "Add Job";
 }
+
+<h2 class="text-center">Add Job</h2>
+
+<form method="post" action="/Job/CreateJob" class="mt-4">
+    <div class="form-group">
+        <label asp-for="JobDescription" class="form-label">Job Description</label>
+        <textarea asp-for="JobDescription" class="form-control" rows="3" placeholder="Enter job description"></textarea>
+        <span asp-validation-for="JobDescription" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="JobBudget" class="form-label">Job Budget</label>
+        <input asp-for="JobBudget" step=".01" type="number" class="form-control" placeholder="Enter job budget">
+        <span asp-validation-for="JobBudget" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="JobLevel" class="form-label">Job Level</label>
+        <select asp-for="JobLevel" class="form-select">
+            <option value="">Select level</option>
+            <option value="master">Master</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="entry">Entry</option>
+        </select>
+        <span asp-validation-for="JobLevel" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="CompletionTime" class="form-label">Completion Time</label>
+        <input asp-for="CompletionTime" type="text" class="form-control" placeholder="Enter completion time (e.g., 2 weeks)">
+        <span asp-validation-for="CompletionTime" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-4">Add Job</button>
+</form>

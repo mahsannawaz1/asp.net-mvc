@@ -14,5 +14,7 @@
         public int AddressId { get; set; }
         public bool IsAdmin { get; set; }
         public string UserPassword { get; set; }
+
+        public string Role { get; set; }
     }
 }

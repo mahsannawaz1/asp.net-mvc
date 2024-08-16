@@ -9,13 +9,13 @@ namespace FreelanceMarketPlace.Models.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FreelanceMarketPlace;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
-        public bool Login(Users user)
+        public (bool isAuthenticated,string role) Login(Users user)
         {
-            bool result = false;
+            var result = (false, "");
             using (SqlConnection connect = new SqlConnection(ConnectionString))
             {
                 connect.Open();
-                string LoginQuery = "SELECT UserPassword FROM Users WHERE UserEmail = @email";
+                string LoginQuery = "SELECT UserPassword,Role FROM Users WHERE UserEmail = @email";
                 using (SqlCommand cmd = new SqlCommand(LoginQuery, connect))
                 {
                     cmd.Parameters.AddWithValue("@email", user.UserEmail);
@@ -25,10 +25,13 @@ namespace FreelanceMarketPlace.Models.Repositories
                         if (reader.HasRows && reader.Read())
                         {
                             string storedHash = reader["UserPassword"] as string;
+
+                            string role = reader["Role"] as string;
+                            Console.WriteLine(role);
                             if (storedHash != null)
                             {
                                 // Verify the provided password
-                                result = VerifyPassword(storedHash, user.UserPassword);
+                                result = VerifyPassword(storedHash, user.UserPassword) ? (true,role) : result;
                             }
                           
                         } 
@@ -60,7 +63,7 @@ namespace FreelanceMarketPlace.Models.Repositories
                     try
                     {
                         // Insert into User table
-                        string RegisterQuery = "INSERT INTO [Users] (FirstName, LastName, UserEmail, UserPassword) VALUES (@first_name, @last_name, @email, @password); SELECT SCOPE_IDENTITY();";
+                        string RegisterQuery = "INSERT INTO [Users] (FirstName, LastName, UserEmail, UserPassword, Role) VALUES (@first_name, @last_name, @email, @password,@role); SELECT SCOPE_IDENTITY();";
                         int userId = 0;
 
                         using (SqlCommand cmd = new SqlCommand(RegisterQuery, connect, transaction))
@@ -73,7 +76,7 @@ namespace FreelanceMarketPlace.Models.Repositories
                             cmd.Parameters.AddWithValue("@last_name", user.LastName ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@email", user.UserEmail ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@password", hashedPassword ?? (object)DBNull.Value);
-
+                            cmd.Parameters.AddWithValue("@role", role ?? (object)DBNull.Value);
                             var result = cmd.ExecuteScalar();
                             if (result != null)
                             {

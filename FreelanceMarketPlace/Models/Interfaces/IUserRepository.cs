@@ -4,7 +4,7 @@ namespace FreelanceMarketPlace.Models.Interfaces
 {
     public interface IUserRepository
     {
-        public bool Login(Users user);
+        public (bool isAuthenticated, string role) Login(Users user);
 
         public bool SignUp(Users user,string role);
 

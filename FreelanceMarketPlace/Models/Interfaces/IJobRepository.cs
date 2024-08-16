@@ -1,5 +1,5 @@
 ﻿using FreelanceMarketPlace.Models.Entities;
-using System.Collections.Generic;
+
 
 namespace FreelanceMarketPlace.Models.Interfaces
 {
@@ -9,6 +9,8 @@ namespace FreelanceMarketPlace.Models.Interfaces
         public Job GetJob(int jobId);
         public void UpdateJob(Job job);
         public void DeleteJob(int jobId);
-        public List<Job> ShowAllJobs();
+        public List<Job> ShowAllJobs(int ClientId);
+
+        public int GetClientIdByEmail(string email);
     }
 }

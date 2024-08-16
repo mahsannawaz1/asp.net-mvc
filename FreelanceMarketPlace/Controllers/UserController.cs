@@ -1,6 +1,5 @@
 ﻿using FreelanceMarketPlace.Models.Entities;
 using FreelanceMarketPlace.Models.Interfaces;
-using FreelanceMarketPlace.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FreelanceMarketPlace.Controllers
@@ -19,11 +18,11 @@ namespace FreelanceMarketPlace.Controllers
         [HttpGet]
         public ViewResult Profile()
         {
-            var currentUser = Request.Cookies["CurrentUser"];
+            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
 
             // Pass the user info to the view
             ViewBag.CurrentUser = currentUser;
-            return View(currentUser);
+            return View();
         }
 
         [HttpGet]
@@ -48,6 +47,7 @@ namespace FreelanceMarketPlace.Controllers
         public ViewResult Logout()
         {
             HttpContext.Response.Cookies.Delete("AuthToken");
+            HttpContext.Response.Cookies.Delete("Role");
             return View();
         }
 
@@ -55,9 +55,9 @@ namespace FreelanceMarketPlace.Controllers
         public IActionResult SignIn(string email, string password)
         {
             var user = new Users { UserEmail = email, UserPassword = password };
-            bool isAuthenticated = _userRepository.Login(user);
+            var result = _userRepository.Login(user);
 
-            if (isAuthenticated)
+            if (result.isAuthenticated)
             {
                 var cookieOptions = new CookieOptions
                 {
@@ -65,6 +65,7 @@ namespace FreelanceMarketPlace.Controllers
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 };
                 HttpContext.Response.Cookies.Append("AuthToken", email, cookieOptions);
+                HttpContext.Response.Cookies.Append("Role", result.role, cookieOptions);
 
                 return RedirectToAction("Index", "Home");
             }

@@ -1,4 +1,5 @@
 using FreelanceMarketPlace.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -17,7 +18,9 @@ namespace FreelanceMarketPlace.Controllers
         public IActionResult Index()
         {
             bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role",out string role);
             ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             return View();
         }
 
