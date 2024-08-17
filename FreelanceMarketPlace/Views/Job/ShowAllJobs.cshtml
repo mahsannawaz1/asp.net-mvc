@@ -24,6 +24,17 @@
                                 <strong>Completion Time:</strong> @job.CompletionTime <br />
                                 <small class="text-muted">Posted on @job.CreatedOn.ToString("MMM dd, yyyy")</small>
                             </p>
+                            <div class="jobSkills">
+                                @if (job.Skills != null)
+                                {
+                                    @foreach (var skill in job.Skills)
+                                    {
+                                        <span class="badge badge-pill mb-2 skill">@skill</span>
+                                    }
+                                }
+
+                               
+                            </div>
                             <a href="@Url.Action("JobDetails", new { id = job.JobId })" class="btn btn-success">See more</a>
                         </div>
                     </div>

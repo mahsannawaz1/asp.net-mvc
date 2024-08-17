@@ -4,6 +4,7 @@ using FreelanceMarketPlace.Models.Interfaces;
 using System.Collections.Generic;
 using FreelanceMarketPlace.Models.Repositories;
 using System.Data;
+using Newtonsoft.Json;
 
 namespace FreelanceMarketPlace.Controllers
 {
@@ -46,6 +47,8 @@ namespace FreelanceMarketPlace.Controllers
                     if (ClientId == -1) {
                         return RedirectToAction("Index", "Home");
                     }
+                    List<string> skills = JsonConvert.DeserializeObject<List<string>>(job.Skills[0]);
+                    
                     Job newJob = new Job
                     {
                        JobDescription = job.JobDescription,
@@ -53,9 +56,12 @@ namespace FreelanceMarketPlace.Controllers
                        JobLevel = job.JobLevel,
                        CompletionTime = job.CompletionTime,
                        ClientId = ClientId,
+                       Skills = skills,
                     };
 
-                     _jobRepository.CreateJob(newJob);
+
+                    _jobRepository.CreateJob(newJob);
+                    return RedirectToAction("ShowAllJobs", "Job");
                 }
             }
             catch (Exception ex)

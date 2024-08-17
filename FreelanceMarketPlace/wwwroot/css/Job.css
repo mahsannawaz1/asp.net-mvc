@@ -28,3 +28,22 @@ input[type=number] {
     overflow: hidden; /* Hide the overflowed text */
     text-overflow: ellipsis; /* Show dots (...) when text exceeds the container */
 }
+.jobSkills .skill {
+    background: rgb(241, 241, 241);
+    color: rgb(103, 103, 103);
+}
+
+.skill {
+    position: relative;
+    font-size: initial;
+    font-weight: initial;
+    border-radius: 15px;
+    background: black;
+    margin-right: 5px !important;
+}
+
+.close-icon{
+    
+    margin-left:5px;
+    cursor:pointer;
+}

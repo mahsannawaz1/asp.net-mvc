@@ -2,6 +2,7 @@
 using FreelanceMarketPlace.Models.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
+using System.Data;
 
 namespace FreelanceMarketPlace.Models.Repositories
 {
@@ -19,10 +20,12 @@ namespace FreelanceMarketPlace.Models.Repositories
 
             try
             {
+                int JobId;
                 // Define the query for inserting a new job
                 string insertQuery = @"
-            INSERT INTO Job (JobDescription, JobBudget, CreatedOn, UpdatedOn, JobLevel, ClientId,CompletionTime)
-            VALUES (@JobDescription, @JobBudget, @CreatedOn, @UpdatedOn, @JobLevel, @ClientId,@CompletionTime)";
+            INSERT INTO Job (JobDescription, JobBudget, CreatedOn, UpdatedOn, JobLevel, ClientId, CompletionTime)
+            OUTPUT INSERTED.JobId
+            VALUES (@JobDescription, @JobBudget, @CreatedOn, @UpdatedOn, @JobLevel, @ClientId, @CompletionTime)";
                 using (SqlConnection connect = new SqlConnection(ConnectionString))
                 {
                     connect.Open();
@@ -40,9 +43,46 @@ namespace FreelanceMarketPlace.Models.Repositories
                         cmd.Parameters.AddWithValue("@CompletionTime", job.CompletionTime);
 
                         // Execute the query to insert the job into the database
-                        cmd.ExecuteNonQuery();
+
+                        JobId = (int)cmd.ExecuteScalar();
+                        
                         Console.WriteLine("Job Created!");
+                    }                
+                    if ( job.Skills.Count > 0)
+                    {         
+                        
+                        // Retrieve existing skills and get their IDs
+                        var jobTuples = new (int Id, string Name)[job.Skills.Count]; 
+
+                        for (int i = 0; i < job.Skills.Count; i++) 
+                        {
+                            Console.WriteLine(job.Skills[i]);
+                            int skillId = GetOrCreateSkillId(job.Skills[i], connect);                           
+                            jobTuples[i].Id = skillId;
+                            jobTuples[i].Name = job.Skills[i];
+                        }
+
+                        for (int i = 0; i < job.Skills.Count; i++)
+                        {
+                            int skillId = jobTuples[i].Id;
+                            if (!JobSkillExists(JobId, skillId, connect))
+                            {
+                                string insertJobSkillQuery = @"
+                                    INSERT INTO JobSkill (JobId, SkillId)
+                                    VALUES (@JobId, @SkillId)";
+
+                                using (SqlCommand cmd = new SqlCommand(insertJobSkillQuery, connect))
+                                {
+                                    cmd.Parameters.Add("@JobId", SqlDbType.Int).Value = JobId;
+                                    cmd.Parameters.Add("@SkillId", SqlDbType.Int).Value = skillId;
+
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+
                     }
+                    
                 }
             }
             catch (SqlException sqlEx)
@@ -54,7 +94,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             catch (Exception ex)
             {
                 // Handle general exceptions here
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"An error occurred: {ex}");
                 throw new Exception("An error occurred while creating the job", ex);
             }
         }
@@ -121,6 +161,14 @@ namespace FreelanceMarketPlace.Models.Repositories
                             }
                         }
                     }
+                    if(jobs.Count > 0)
+                    {
+                        foreach (var job in jobs)
+                        {
+                            job.Skills = GetSkillsForJob(job.JobId, connect);
+                        }
+
+                    }
                 }
             }
             catch (SqlException sqlEx)
@@ -186,6 +234,78 @@ namespace FreelanceMarketPlace.Models.Repositories
 
             return clientId; // Return the found ClientId or -1 if no client was found
         }
+
+
+        private bool JobSkillExists(int jobId, int skillId, SqlConnection connection)
+        {
+            string checkJobSkillQuery = @"
+            SELECT COUNT(*)
+            FROM JobSkill
+            WHERE JobId = @JobId AND SkillId = @SkillId";
+
+            using (SqlCommand cmd = new SqlCommand(checkJobSkillQuery, connection))
+            {
+                cmd.Parameters.Add("@JobId", SqlDbType.Int).Value = jobId;
+                cmd.Parameters.Add("@SkillId", SqlDbType.Int).Value = skillId;
+
+                int count = (int)cmd.ExecuteScalar();
+                return count > 0;
+            }
+        }
+
+
+        private int GetOrCreateSkillId(string skillName, SqlConnection connection)
+        {
+            // Check if the skill exists
+            string selectSkillQuery = "SELECT SkillId FROM Skill WHERE SkillName = @Name";
+            using (SqlCommand cmd = new SqlCommand(selectSkillQuery, connection))
+            {
+                cmd.Parameters.Add("@Name", SqlDbType.NVarChar).Value = skillName;
+
+                var result = cmd.ExecuteScalar();
+                if (result != null)
+                {
+                    return (int)result;
+                }
+            }
+
+            // Skill does not exist, so insert it
+            string insertSkillQuery = "INSERT INTO Skill (SkillName) OUTPUT INSERTED.SkillId VALUES (@Name)";
+            using (SqlCommand cmd = new SqlCommand(insertSkillQuery, connection))
+            {
+                cmd.Parameters.Add("@Name", SqlDbType.NVarChar).Value = skillName;
+
+                return (int)cmd.ExecuteScalar();
+            }
+        }
+
+
+        private List<string> GetSkillsForJob(int jobId, SqlConnection connection)
+        {
+            List<string> skills = new List<string>();
+
+            string query = @"
+            SELECT s.SkillName
+            FROM JobSkill js
+            JOIN Skill s ON js.SkillId = s.SkillId
+            WHERE js.JobId = @JobId";
+
+            using (SqlCommand cmd = new SqlCommand(query, connection))
+            {
+                cmd.Parameters.Add("@JobId", SqlDbType.Int).Value = jobId;
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        skills.Add(reader["SkillName"].ToString());
+                    }
+                }
+            }
+
+            return skills;
+        }
+
 
 
     }
