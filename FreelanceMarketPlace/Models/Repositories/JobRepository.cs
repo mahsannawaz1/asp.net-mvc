@@ -100,10 +100,75 @@ namespace FreelanceMarketPlace.Models.Repositories
         }
 
 
-        public Job GetJob(int jobId)
+        public (Job job, Client client, Users user, List<FreelancerProposals> proposalWithFreelancer) GetJob(int jobId)
         {
-            // Implementation for retrieving a single job
-            return new Job();
+            Job job = new Job();
+            Client client = new Client();
+            Users user = new Users();
+            List<FreelancerProposals> proposalWithFreelancer = new List<FreelancerProposals>();
+
+            // SQL Query to get job, client, and user details
+            string sql = @"
+    SELECT j.JobId, j.JobDescription, j.JobBudget, j.JobStatus, j.JobLevel, j.CompletionTime, 
+           j.CreatedOn, j.UpdatedOn, j.CompletedOn, 
+           c.ClientId, c.AmountSpent, c.CardId, c.UserId, 
+           u.UserId, u.UserEmail, u.FirstName, u.LastName, u.Role, u.Phone
+    FROM Job j
+    JOIN Client c ON j.ClientId = c.ClientId
+    JOIN Users u ON c.UserId = u.UserId
+    WHERE j.JobId = @JobId;
+    ";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@JobId", jobId);
+
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        // Populate Job object
+                        job = new Job
+                        {
+                            JobId = reader.GetInt32(0),
+                            JobDescription = reader.IsDBNull(1) ? null : reader.GetString(1),
+                            JobBudget = reader.GetDecimal(2),
+                            JobStatus = reader.GetString(3),
+                            JobLevel = reader.GetString(4),
+                            CompletionTime = reader.GetString(5),
+                            CreatedOn = reader.GetDateTime(6),
+                            UpdatedOn = reader.GetDateTime(7),
+                        };
+
+                        // Populate Client object
+                        client = new Client
+                        {
+                            ClientId = reader.GetInt32(9),
+                            AmountSpent = reader.IsDBNull(10) ? 0 : reader.GetDecimal(10),
+                        };
+
+                        // Populate User object
+                        user = new Users
+                        {
+                            UserId = reader.GetInt32(13),
+                            UserEmail = reader.GetString(14),
+                            FirstName = reader.GetString(15),
+                            LastName = reader.GetString(16),
+                            Role = reader.GetString(17),
+                            Phone = reader.IsDBNull(18) ? null : reader.GetString(18)
+                        };
+                    }
+                }
+
+                // Retrieve skills using a separate connection
+                job.Skills = GetSkillsForJob(job.JobId, connection);
+                proposalWithFreelancer = GetFreelancersAndProposalsByJobId(jobId, connection);
+            }
+            
+            // Return the job, client, and user as a tuple
+            return (job, client, user, proposalWithFreelancer);
         }
 
         public void UpdateJob(Job job)
@@ -305,6 +370,93 @@ namespace FreelanceMarketPlace.Models.Repositories
 
             return skills;
         }
+
+        public List<FreelancerProposals> GetFreelancersAndProposalsByJobId(int jobId, SqlConnection connection)
+        {
+            List<FreelancerProposals> freelancerProposals = new List<FreelancerProposals>();
+
+            string query = @"
+        SELECT 
+            F.FreelancerId,
+            F.Title,
+            F.Intro,
+            F.AmountReceived,
+            F.GithubLink,
+            F.LinkedinLink,
+            F.PerHourRate,
+            F.WorkingHours,
+            F.CardId,
+            F.UserId,
+            U.UserEmail,
+            U.FirstName,
+            U.LastName,
+            P.ProposalId,
+            P.ProposalDescription,
+            P.ProposalBid,
+            P.CompletionTime,
+            P.JobId,
+            P.CreatedOn,
+            P.UpdatedOn
+        FROM 
+            Freelancer F
+        JOIN 
+            Users U ON F.UserId = U.UserId
+        JOIN 
+            Proposal P ON P.FreelancerId = F.FreelancerId
+        WHERE 
+            P.JobId = @JobId";
+
+           
+                using (SqlCommand cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@JobId", jobId);
+
+                    try
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                FreelancerProposals freelancerProposal = new FreelancerProposals
+                                {
+                                    FreelancerId = Convert.ToInt32(reader["FreelancerId"]),
+                                    Title = reader["Title"].ToString(),
+                                    Intro = reader["Intro"].ToString(),
+                                    AmountReceived = reader["AmountReceived"] != DBNull.Value ? (decimal)reader["AmountReceived"] : 0,
+                                    GithubLink = reader["GithubLink"].ToString(),
+                                    LinkedinLink = reader["LinkedinLink"].ToString(),
+                                    PerHourRate = reader["PerHourRate"] != DBNull.Value ? (int)reader["PerHourRate"] : 0,
+                                    WorkingHours = reader["WorkingHours"] != DBNull.Value ? (int)reader["WorkingHours"] : 0,
+                                    CardId = reader["CardId"] != DBNull.Value ? (int)reader["CardId"] : (int?)null,
+                                    UserId = Convert.ToInt32(reader["UserId"]),
+                                    UserEmail = reader["UserEmail"].ToString(),
+                                    FirstName = reader["FirstName"].ToString(),
+                                    LastName = reader["LastName"].ToString(),
+                                    // Adding Proposal Details
+                                    ProposalId = Convert.ToInt32(reader["ProposalId"]),
+                                    ProposalDescription = reader["ProposalDescription"].ToString(),
+                                    ProposalBid = reader["ProposalBid"] != DBNull.Value ? (decimal)reader["ProposalBid"] : 0,
+                                    CompletionTime = reader["CompletionTime"].ToString(),
+                                    JobId = Convert.ToInt32(reader["JobId"]),
+                                    CreatedOn = reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("CreatedOn")),
+                                    UpdatedOn = reader.IsDBNull(reader.GetOrdinal("UpdatedOn")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("UpdatedOn"))
+                                };
+
+                                freelancerProposals.Add(freelancerProposal);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+            return freelancerProposals;
+       
+        }
+
+            
+        
 
 
 

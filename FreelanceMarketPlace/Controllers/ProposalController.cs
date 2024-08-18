@@ -27,8 +27,45 @@ namespace FreelanceMarketPlace.Controllers
         }
 
         [HttpPost]
-        public IActionResult SendProposal(ProposalController proposal)
+        [Route("SendProposal/{jobId}")]
+        public IActionResult SendProposal(Proposal proposal)
         {
+            Console.WriteLine($"kING");
+            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            // Pass the user info to the view
+            ViewBag.CurrentUser = currentUser;
+
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            int FreelancerId = _proposalRepository.GetFreelancerIdByEmail(email);
+
+            Console.WriteLine(FreelancerId);
+            if (FreelancerId == -1)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            Console.WriteLine(proposal.JobId);
+            Proposal newProposal = new Proposal
+            {
+                ProposalBid = proposal.ProposalBid,
+                ProposalDescription = proposal.ProposalDescription,
+                FreelancerId=FreelancerId,
+                CompletionTime = proposal.CompletionTime,
+                JobId = (int)proposal.JobId,
+            };
+            _proposalRepository.SendProposal(newProposal);
+            return View();
+        }
+
+
+        [HttpGet]
+        [Route("SendProposal/{jobId}")]
+        public ActionResult SendProposal(int jobId)
+        {
+            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            // Pass the user info to the view
+            ViewBag.CurrentUser = currentUser;
+            ViewData["jobId"] = jobId;
             return View();
         }
 

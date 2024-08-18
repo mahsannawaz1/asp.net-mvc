@@ -2,7 +2,7 @@
 
     @using Humanizer
     ViewData["Title"] = "All Jobs";
-    var details = ViewData["details"] as Tuple<FreelanceMarketPlace.Models.Entities.Job, FreelanceMarketPlace.Models.Entities.Client, FreelanceMarketPlace.Models.Entities.Users, List<FreelanceMarketPlace.Models.Entities.FreelancerProposals>>;
+    var details = ViewData["details"] as Tuple<FreelanceMarketPlace.Models.Entities.Job, FreelanceMarketPlace.Models.Entities.Client, FreelanceMarketPlace.Models.Entities.Users>;
     string statusClass = details?.Item1?.JobStatus switch
     {
         "open" => "text-success",
@@ -27,7 +27,7 @@
                 <div class="p-0 card-body">
                     <h5 class="card-title">Skills and Expertise</h5>
                     <div class="jobSkills">
-                        @if (@details?.Item1?.Skills != null)
+                        @if (@details?.Item1?.Skills != null )
                         {
                             @foreach (var skill in @details?.Item1?.Skills)
                             {
@@ -36,7 +36,7 @@
                         }
 
                         @if (@details?.Item1?.Skills.Count == 0)
-
+                       
                         {
                             <p>No Skills Required For this Job</p>
                         }
@@ -51,15 +51,34 @@
 
                 <div class="p-0 card-body">
                     <h5 class="card-title">Activity on this job</h5>
-                    <p>Proposals : <span>@details?.Item4.Count</span></p>
+                    <p>Proposals : <span>5</span></p>
                 </div>
             </div>
 
+            <div class="card mb-4">
+
+                <div class="p-0 card-body">
+                    <h5 class="card-title">About The Client</h5>
+                    <p class="text-secondary">Member since 2023</p>
+                    <div class="d-flex gap-4">
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">Pakistan</p>
+                            <p class="m-0 p-0">Lahore</p>
+                        </div>
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">27 jobs posted</p>
+                            <p class="m-0 p-0">46% hire rate, 1 open job</p>
+
+                        </div>
+
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">$@details?.Item2?.AmountSpent total spent</p>
+                            <p class="m-0 p-0">27 hires, 3 active</p>
+                        </div>
+                    </div>  
+                </div>
+            </div>
         </div>
-
-       
-
-        
 
         <!-- Sidebar Section -->
         <div class="col-md-4">
@@ -73,59 +92,21 @@
                         <li class="list-group-item text-capitalize"><strong>Project Type:</strong> One-time project</li>
                         <li class="list-group-item text-capitalize"><strong>Job Type:</strong> Remote Job</li>
                         <li class="list-group-item text-capitalize">
-                            <strong>Job Status:</strong>
+                            <strong>Job Status:</strong> 
                             <span class="@statusClass fw-bold">@details?.Item1?.JobStatus</span>
+                            
+                            
                         </li>
                     </ul>
                 </div>
-
-
+                @if (@details?.Item1?.JobStatus == "open"){
+                    <a href="/SendProposal/@details?.Item1?.JobId" class="btn btn-success btn-sm mx-5">Send Proposal</a>
+                }
+               
+                
             </div>
-
-
+           
+            
         </div>
     </div>
-
-    @if (details?.Item4 != null)
-    {
-        <h1 class="mb-4 text-center">Proposals</h1>
-        <div class="row">
-            @foreach (var proposal in details?.Item4)
-            {
-                <div class="col-md-6  mb-4">
-                    <div class="card h-100 shadow-sm border">
-                        <div class="card-body">
-                            <h6 class="card-title truncate fw-light">@proposal.ProposalDescription</h6>
-                            <p class="card-text mb-0">
-                                <strong>Bidder:</strong> @proposal.FirstName @proposal.LastName <br />
-                                <strong>Bidder Email:</strong> @proposal.UserEmail <br />
-                                <strong>Bid:</strong> $@proposal.ProposalBid <br />
-                                <strong>Completion Time:</strong> @proposal.CompletionTime <br />
-                                <small class="text-muted">Submitted @proposal.CreatedOn.Humanize()</small>
-                                
-                            </p>
-                            <div class="py-2">
-                                <a href="" class="text-success text-decoration-none">See More...</a>
-                           </div>
-
-                           
-                           <div>
-                                <a class="btn btn-success btn-sm">Mark as read</a>
-                                <a class="btn btn-danger btn-sm">Reject</a>
-                           </div>
-                           
-
-                            @*  <a href="@Url.Action("GetJob", new { id = job.JobId })" class="btn btn-success">See more</a> *@
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info" role="alert">
-            No jobs available.
-        </div>
-    }
 </div>

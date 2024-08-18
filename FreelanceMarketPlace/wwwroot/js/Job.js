@@ -1,4 +1,5 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+    
     const skillButton = document.querySelector(".addSkillButton");
     const input = document.getElementById("skillInput");
     const errorDiv = document.querySelector(".emptySkill");
@@ -14,6 +15,7 @@
             errorDiv.textContent = ``;
             if (skillList.childElementCount == 10) {
                 errorDiv.textContent = `You can't add more skills.`;
+                document.getElementById("skillInput").value = ''
             } else {
                 const newSkill = document.createElement('span');
                 newSkill.className = 'badge badge-pill badge-primary mb-2 skill';
@@ -30,6 +32,7 @@
 
                 skillList.appendChild(newSkill);
                 updateSkillsInput(); // Update hidden field after adding
+                document.getElementById("skillInput").value = ''
             }
         }
     });

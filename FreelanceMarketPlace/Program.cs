@@ -9,6 +9,8 @@ builder.Services.AddControllersWithViews();
 // Register IUserRepository and its implementation
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<IFreelancerRepository, FreelancerRepository>();
+builder.Services.AddScoped<IProposalRepository, ProposalRepository>();
 
 var app = builder.Build();
 

@@ -1,5 +1,70 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model FreelanceMarketPlace.Models.Entities.Proposal
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
+    ViewData["Title"] = "Submit a Proposal";
+    var jobId = ViewData["jobId"];
 }
+
+<h2 class="text-center">@ViewData["Title"]</h2>
+
+    <div class="row border">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-body p-3">
+                    <h5 class="card-title">Job Details</h5
+                        <p class="text-muted">Posted yesterday <strong class="m-3"> <i class="fa-solid fa-globe"></i> Worldwide</strong></p>
+                        <p class="mb-3 card-text truncate text-capitalize mb-0">Here is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails, its requirements, or any other important information.Here is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails,Here is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails, its requirements, or any other important informationHere is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails, its requirements, or any other important informationHere is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails, its requirements, or any other important informationHere is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entailsHere is a brief description of the job. It is limited to 3-4 lines and gives an overview of what the job entails, its requirements, or any other important information its requirements, or any other important information its requirements, or any other important information</p>
+                   
+                    
+                    <a href="#" class="text-success text-decoration-none">View Job Posting</a>
+                </div>
+            </div>
+        </div>
+        <div class="vr p-0 m-3 col-md-auto"></div>
+        <div class="col-md-4">
+            <div class="contract-section p-3">
+              <div class="">
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">Experience Level</p>
+                            <p class="m-0 p-0">Expert</p>
+                        </div>
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">Budget</p>
+                            <p class="m-0 p-0">$12.00</p>
+
+                        </div>
+
+                        <div class="mb-2">
+                            <p class="fw-bold m-0 p-0">Project Length</p>
+                            <p class="m-0 p-0">2 weeks</p>
+                        </div>
+                    </div>  
+            </div>
+        </div>
+    </div>
+
+
+
+
+        <form class="mt-3 form" method="post" action="/SendProposal/@jobId">
+            <input asp-for="JobId" value="@ViewData["jobId"]" hidden/>
+            <div class="form-group">
+                <label asp-for="ProposalDescription" class="form-label">Cover Letter</label>
+                <textarea asp-for="ProposalDescription" class="form-control" rows="3" placeholder="Enter your Cover Letter"></textarea>
+                <span asp-validation-for="ProposalDescription" class="text-danger"></span>
+            </div>
+             <div class="form-group mt-3">
+                 <label asp-for="ProposalBid" class="form-label">Proposal Bid</label>
+                <input asp-for="ProposalBid" step=".01" type="number" class="form-control" placeholder="Enter Your Bid">
+                <span asp-validation-for="ProposalBid" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="CompletionTime" class="form-label">Completion Time</label>
+                <input asp-for="CompletionTime" type="text" class="form-control" placeholder="Enter completion time (e.g., 2 weeks)">
+                <span asp-validation-for="CompletionTime" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-4 submit-proposal">Submit</button>
+        </form>
+

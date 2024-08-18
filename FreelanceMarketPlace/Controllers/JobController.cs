@@ -20,6 +20,9 @@ namespace FreelanceMarketPlace.Controllers
         [HttpGet]
         public ViewResult CreateJob()
         {
+            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            // Pass the user info to the view
+            ViewBag.CurrentUser = currentUser;
             return View();
         }
 
@@ -87,10 +90,15 @@ namespace FreelanceMarketPlace.Controllers
             return View();
         }
 
-        [HttpGet]
-        public ViewResult GetJob(int jobId)
+        [Route("Job/GetJob/{id}")]
+        public IActionResult GetJob(int id)
         {
-           
+            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            // Pass the user info to the view
+            ViewBag.CurrentUser = currentUser;
+            var data = _jobRepository.GetJob(id);
+            var details = Tuple.Create(data.job, data.client, data.user,data.proposalWithFreelancer);
+            ViewData["details"] = details;
             return View();
         }
 

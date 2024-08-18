@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
     ViewData["Title"] = "All Jobs";
     var jobs = ViewData["jobs"] as List<FreelanceMarketPlace.Models.Entities.Job>;
@@ -33,9 +32,9 @@
                                     }
                                 }
 
-                               
+
                             </div>
-                            <a href="@Url.Action("GetJob", new { id = job.JobId })" class="btn btn-success">See more</a>
+                            <a href="@Url.Action("JobDetails", new { id = job.JobId })" class="btn btn-success">See more</a>
                         </div>
                     </div>
                 </div>

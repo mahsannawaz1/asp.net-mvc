@@ -24,9 +24,9 @@ input[type=number] {
 }
 .limited-text {
     
-    white-space: nowrap; /* Prevent the text from wrapping to the next line */
-    overflow: hidden; /* Hide the overflowed text */
-    text-overflow: ellipsis; /* Show dots (...) when text exceeds the container */
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
 }
 .jobSkills .skill {
     background: rgb(241, 241, 241);
@@ -46,4 +46,12 @@ input[type=number] {
     
     margin-left:5px;
     cursor:pointer;
+}
+
+.truncate {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Number of lines to show */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
