@@ -17,12 +17,25 @@ namespace FreelanceMarketPlace.Controllers
         [HttpGet]
         public ViewResult ShowAllSendProposals()
         {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            int FreelancerId = _proposalRepository.GetFreelancerIdByEmail(email);
+            List<FreelancerProposals> proposals = _proposalRepository.ShowAllSendProposals(FreelancerId);
+            ViewData["proposals"] = proposals;
             return View();
         }
 
         [HttpGet]
         public ViewResult ShowAllProposalsOnJob(int JobId)
         {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             return View();
         }
 
@@ -30,15 +43,16 @@ namespace FreelanceMarketPlace.Controllers
         [Route("SendProposal/{jobId}")]
         public IActionResult SendProposal(Proposal proposal)
         {
-            Console.WriteLine($"kING");
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+
+
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
 
             string email = HttpContext.Request.Cookies["AuthToken"];
             int FreelancerId = _proposalRepository.GetFreelancerIdByEmail(email);
 
-            Console.WriteLine(FreelancerId);
             if (FreelancerId == -1)
             {
                 return RedirectToAction("Index", "Home");
@@ -62,9 +76,10 @@ namespace FreelanceMarketPlace.Controllers
         [Route("SendProposal/{jobId}")]
         public ActionResult SendProposal(int jobId)
         {
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             ViewData["jobId"] = jobId;
             return View();
         }
@@ -73,6 +88,18 @@ namespace FreelanceMarketPlace.Controllers
         public IActionResult GetProposal(int porposalId)
         {
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult UpdateStatus(int proposalId,string status)
+        {
+            Console.WriteLine($"Status: {status}");
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            _proposalRepository.UpdateProposalStatus(proposalId, status);
+            return Json(new { success = true, message = "Status updated successfully" });
         }
 
         [HttpPatch]

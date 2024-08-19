@@ -19,8 +19,10 @@ namespace FreelanceMarketPlace.Controllers
         {
 
             List<Job> jobs = new List<Job>(); // Initialize the list
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
 
             try
             {
@@ -43,9 +45,10 @@ namespace FreelanceMarketPlace.Controllers
         [Route("Freelancer/JobDetails/{id}")]
         public IActionResult JobDetails(int id)
         {
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             var data = _freelancerRepository.JobDetails(id);
             var details = Tuple.Create(data.job, data.client, data.user);
             ViewData["details"] = details;

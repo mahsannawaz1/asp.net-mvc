@@ -86,7 +86,7 @@
         </div>
     </div>
 
-    @if (details?.Item4 != null)
+    @if (details?.Item4 != null && details?.Item4.Count > 0)
     {
         <h1 class="mb-4 text-center">Proposals</h1>
         <div class="row">
@@ -108,11 +108,40 @@
                                 <a href="" class="text-success text-decoration-none">See More...</a>
                            </div>
 
-                           
-                           <div>
-                                <a class="btn btn-success btn-sm">Mark as read</a>
-                                <a class="btn btn-danger btn-sm">Reject</a>
-                           </div>
+                            @if (@proposal.ProposalStatus == "not seen")
+                            {
+                                <div>
+                                    <a class="btn btn-success btn-sm" onclick="updateProposalStatus(@proposal.ProposalId, 'accepted')">Accepted</a>
+                                    <a class="btn btn-warning btn-sm" onclick="updateProposalStatus(@proposal.ProposalId, 'seen')">Mark as read</a>
+                                    <a class="btn btn-danger btn-sm" onclick="updateProposalStatus(@proposal.ProposalId, 'cancelled')">Reject</a>
+
+                                </div>
+                            }
+                            else if (@proposal.ProposalStatus == "seen")
+                            {
+                                <div class="d-flex gap-2 align-items-center justify-content-between">
+                                    <div>
+                                        <a class="btn btn-success btn-sm" onclick="updateProposalStatus(@proposal.ProposalId, 'accepted')">Accepted</a>
+                                        <a class="btn btn-danger btn-sm" onclick="updateProposalStatus(@proposal.ProposalId, 'cancelled')">Reject</a>
+                                    </div>
+                                   
+                                    <p class="text-success m-0 fw-bold">Seen <i class="fa-solid fa-check-double"></i></p>
+                                </div>
+                            }
+                            else if (@proposal.ProposalStatus == "accepted")
+                            {
+                                <div>
+                                    <p class="text-success fw-bold">Accepted</p>
+
+                                </div>
+                            }
+                            else{
+                                <div>
+                                    <p class="text-danger fw-bold">Rejected</p>
+                                  
+                                </div>
+                            }
+
                            
 
                             @*  <a href="@Url.Action("GetJob", new { id = job.JobId })" class="btn btn-success">See more</a> *@
@@ -124,8 +153,29 @@
     }
     else
     {
-        <div class="alert alert-info" role="alert">
-            No jobs available.
+        <div class="alert alert-danger" role="alert">
+            No proposals on this job.
         </div>
     }
 </div>
+
+<script>
+    function updateProposalStatus(proposalId, status) {
+        console.log(proposalId, status)
+        $.ajax({
+            url: '/Proposal/UpdateStatus',  // URL to your controller action
+            type: 'POST',
+            data: {
+                proposalId: proposalId,
+                status: status
+            },
+            success: function (response) {
+                alert("Proposal status updated successfully");
+                // Optionally, update the UI to reflect the new status
+            },
+            error: function (error) {
+                console.error("Error updating proposal status: ", error);
+            }
+        });
+    }
+</script>

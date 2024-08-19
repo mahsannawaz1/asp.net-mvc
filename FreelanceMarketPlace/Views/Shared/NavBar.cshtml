@@ -30,6 +30,21 @@
                     <a class="nav-link" href="/User/SignIn">Login</a>
                 </li>
             }
+            @if (ViewBag.Role != null && ViewBag.Role.ToString() == "client")
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/Job/ShowAllJobs">Your Jobs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Job/CreateJob">Create a Job</a>
+                </li>
+            }
+            @if (ViewBag.Role != null && ViewBag.Role.ToString() == "freelancer")
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/Freelancer/ShowAllJobs">Find Jobs</a>
+                </li>
+            }
         </ul>
     </div>
 </nav>

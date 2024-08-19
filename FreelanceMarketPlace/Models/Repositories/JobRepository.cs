@@ -395,6 +395,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             P.ProposalBid,
             P.CompletionTime,
             P.JobId,
+            P.ProposalStatus,
             P.CreatedOn,
             P.UpdatedOn
         FROM 
@@ -435,6 +436,7 @@ namespace FreelanceMarketPlace.Models.Repositories
                                     // Adding Proposal Details
                                     ProposalId = Convert.ToInt32(reader["ProposalId"]),
                                     ProposalDescription = reader["ProposalDescription"].ToString(),
+                                    ProposalStatus = reader["ProposalStatus"].ToString(),
                                     ProposalBid = reader["ProposalBid"] != DBNull.Value ? (decimal)reader["ProposalBid"] : 0,
                                     CompletionTime = reader["CompletionTime"].ToString(),
                                     JobId = Convert.ToInt32(reader["JobId"]),

@@ -18,10 +18,10 @@ namespace FreelanceMarketPlace.Controllers
         [HttpGet]
         public ViewResult Profile()
         {
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             return View();
         }
 

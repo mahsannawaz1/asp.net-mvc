@@ -20,9 +20,10 @@ namespace FreelanceMarketPlace.Controllers
         [HttpGet]
         public ViewResult CreateJob()
         {
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             return View();
         }
 
@@ -30,9 +31,10 @@ namespace FreelanceMarketPlace.Controllers
         public IActionResult CreateJob(Job job)
         {
             string email = HttpContext.Request.Cookies["AuthToken"];
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
 
             if (email == null)
             {
@@ -93,9 +95,10 @@ namespace FreelanceMarketPlace.Controllers
         [Route("Job/GetJob/{id}")]
         public IActionResult GetJob(int id)
         {
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            // Pass the user info to the view
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
             var data = _jobRepository.GetJob(id);
             var details = Tuple.Create(data.job, data.client, data.user,data.proposalWithFreelancer);
             ViewData["details"] = details;
@@ -106,8 +109,10 @@ namespace FreelanceMarketPlace.Controllers
         public IActionResult ShowAllJobs()
         {
             List<Job> jobs = new List<Job>(); // Initialize the list
-            var currentUser = HttpContext.Request.Cookies.ContainsKey("AuthToken");
-            ViewBag.CurrentUser = currentUser;
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
 
             string email = HttpContext.Request.Cookies["AuthToken"];
             if (email == null)

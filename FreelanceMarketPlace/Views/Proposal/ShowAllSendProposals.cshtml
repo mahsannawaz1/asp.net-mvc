@@ -1,5 +1,55 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+
+    @using Humanizer
+    ViewData["Title"] = "Your Proposals";
+    var proposals = ViewData["proposals"] as List<FreelanceMarketPlace.Models.Entities.FreelancerProposals>;
+    
 }
+
+<div class="container mt-4">
+
+
+    @if (proposals != null && proposals.Count > 0)
+    {
+        <h1 class="mb-4 text-center">@ViewData["Title"]</h1>
+        <div class="row">
+            @foreach (var proposal in proposals)
+            {
+                <div class="col-md-6  mb-4">
+                    <div class="card h-100 shadow-sm border">
+                        <div class="card-body">
+                            <h6 class="card-title truncate fw-light">@proposal.ProposalDescription</h6>
+                            <p class="card-text mb-0">
+                                <strong>Bidder:</strong> @proposal.FirstName @proposal.LastName <br />
+                                <strong>Bidder Email:</strong> @proposal.UserEmail <br />
+                                <strong>Bid:</strong> $@proposal.ProposalBid <br />
+                                <strong>Completion Time:</strong> @proposal.CompletionTime <br />
+                                <small class="text-muted">Submitted @proposal.CreatedOn.Humanize()</small>
+
+                            </p>
+                            <div class="py-2">
+                                <a href="" class="text-success text-decoration-none">See More...</a>
+                            </div>
+
+                            <div class="py-2">
+                                <a href="/Freelancer/JobDetails/@proposal.JobId" class="text-success text-decoration-none">View Job Posting</a>
+                            </div>
+
+
+                           
+
+
+                            @*  <a href="@Url.Action("GetJob", new { id = job.JobId })" class="btn btn-success">See more</a> *@
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            No proposals on this job.
+        </div>
+    }
+</div>
