@@ -1,0 +1,40 @@
+﻿@model FreelanceMarketPlace.Models.Entities.Users
+
+<input asp-for="UserId" value="@ViewBag.userId" hidden />
+<div class="form-group">
+    <label asp-for="FirstName" class="form-label">First Name</label>
+    <input asp-for="FirstName" class="form-control" placeholder="Enter First Name">
+    <span asp-validation-for="FirstName" class="text-danger"></span>
+</div>
+<div class="form-group mt-3">
+    <label asp-for="LastName" class="form-label">Last Name</label>
+    <input asp-for="LastName" class="form-control" placeholder="Enter Last Name">
+    <span asp-validation-for="LastName" class="text-danger"></span>
+</div>
+
+<div class="form-group mt-3">
+    <label asp-for="CNIC" class="form-label">CNIC</label>
+    <input asp-for="CNIC" type="number" class="form-control" placeholder="Enter CNIC">
+    <span asp-validation-for="CNIC" class="text-danger"></span>
+</div>
+
+<div class="form-group mt-3">
+    <label asp-for="Phone" class="form-label">Phone</label>
+    <input asp-for="Phone" class="form-control" placeholder="Enter Your Phone#" />
+    <span asp-validation-for="Phone" class="text-danger"></span>
+</div>
+
+<div class="form-group mt-3">
+    <label asp-for="PaypalEmail" class="form-label">Paypal Email</label>
+    <input asp-for="PaypalEmail" class="form-control" type="email" placeholder="Enter Paypal Email">
+    <span asp-validation-for="PaypalEmail" class="text-danger"></span>
+</div>
+<div class="form-group mt-3">
+    <label asp-for="Availability" class="form-label">Set Availability</label>
+    <select asp-for="Availability" class="form-select">
+        <option value="">Select Availability</option>
+        <option value="0">Idle</option>
+        <option value="1">Active</option>
+    </select>
+    <span asp-validation-for="Availability" class="text-danger"></span>
+</div>

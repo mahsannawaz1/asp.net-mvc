@@ -1,12 +1,16 @@
 ﻿@model FreelanceMarketPlace.Models.Entities.Job
 @{
     Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
-    ViewData["Title"] = "Add Job";
+    ViewData["Title"] = "Update Job";
+    int jobId = ViewBag.jobId;
 }
 
-<h2 class="text-center">Add Job</h2>
+<h2 class="text-center">@ViewData["Title"]</h2>
 
-<form method="post" action="/Job/CreateJob" class="mt-4">
+<form method="post" action="/Job/UpdateJob" class="mt-4">
+
+    <input asp-for="JobId" type="number" hidden value="@jobId" />
+
     <div class="form-group">
         <label asp-for="JobDescription" class="form-label">Job Description</label>
         <textarea asp-for="JobDescription" class="form-control" rows="6" placeholder="Enter job description"></textarea>
@@ -37,7 +41,7 @@
     </div>
 
     <div class="input-group mt-3">
-        
+
         <input class="form-control mr-sm-2" id="skillInput" placeholder="Add Upto 10 Skills" aria-label="Search" name="searchQuery" />
         <div class="input-group-append">
             <button class="btn btn-success my-2 my-sm-0 addSkillButton">Add</button>
@@ -51,7 +55,7 @@
 
     <input type="hidden" id="skillsInput" asp-for="Skills" />
 
-    
 
-    <button type="submit" class="btn btn-primary mt-4">Add Job</button>
-</form>
+
+          <button type="submit" class="btn btn-primary mt-4">Update Job</button>
+    </form>

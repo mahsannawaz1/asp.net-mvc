@@ -130,10 +130,229 @@ namespace FreelanceMarketPlace.Models.Repositories
             }
         }
 
-
-        public Users Profile(Users user)
+        public Users GetUserProfile(string email)
         {
-            return new Users();
+            Users user = new Users();
+            using (SqlConnection connect = new SqlConnection(ConnectionString))
+            {
+                connect.Open();
+                string LoginQuery = "SELECT * FROM Users WHERE UserEmail = @email";
+                using (SqlCommand cmd = new SqlCommand(LoginQuery, connect))
+                {
+                    cmd.Parameters.AddWithValue("@email", email);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows && reader.Read())
+                        {
+                                user = new Users
+                                {
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    UserEmail = reader["UserEmail"] as string,
+                                    CNIC = reader.IsDBNull(reader.GetOrdinal("CNIC")) ? null : reader["CNIC"] as string,
+                                    FirstName = reader["FirstName"] as string,
+                                    LastName = reader["LastName"] as string,
+                                    PaypalEmail = reader.IsDBNull(reader.GetOrdinal("PaypalEmail")) ? null : reader["PaypalEmail"] as string,
+                                    Availability = reader.GetInt32(reader.GetOrdinal("Availability")) == 1,
+                                    Phone = reader.IsDBNull(reader.GetOrdinal("Phone")) ? null : reader["Phone"] as string,
+                                    AddressId = reader.IsDBNull(reader.GetOrdinal("AddressId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("AddressId")),
+                                    Role = reader["Role"] as string,
+                                    CardId = reader.IsDBNull(reader.GetOrdinal("CardId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("CardId")),
+                                };
+                            
+                        }
+                    }
+                }
+            }
+            return user;
+        }
+
+        public Client GetClientProfile(int userId)
+        {
+            Client client = new Client();
+            using (SqlConnection connect = new SqlConnection(ConnectionString))
+            {
+                connect.Open();
+                string LoginQuery = "SELECT * FROM Client WHERE UserId = @userId";
+                using (SqlCommand cmd = new SqlCommand(LoginQuery, connect))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows && reader.Read())
+                        {
+                            client = new Client {
+                                ClientId = reader.GetInt32(reader.GetOrdinal("ClientId")),
+                                AmountSpent = reader["AmountSpent"] != DBNull.Value ? (decimal)reader["AmountSpent"] : 0,
+                                JobCount = 0
+                            };
+                        }
+                    }
+                }
+                if (client != null)
+                {
+                    Console.WriteLine("Coubnting");
+                    
+                    string jobsQuery = "SELECT COUNT(*) FROM Job WHERE ClientId = @clientId";
+                    using (SqlCommand cmd = new SqlCommand(jobsQuery, connect))
+                    {
+                        cmd.Parameters.AddWithValue("@clientId", client.ClientId);
+
+                        
+                        client.JobCount = (int)cmd.ExecuteScalar();
+                    }
+                }
+            }
+            Console.WriteLine(client.ClientId);
+            return client;
+        }
+
+        public Freelancer GetFreelancerProfile(int userId)
+        {
+            Freelancer freelancer = new Freelancer();
+            using (SqlConnection connect = new SqlConnection(ConnectionString))
+            {
+                connect.Open();
+                string LoginQuery = "SELECT * FROM Freelancer WHERE UserId = @userId";
+                using (SqlCommand cmd = new SqlCommand(LoginQuery, connect))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows && reader.Read())
+                        {
+
+                            freelancer = new Freelancer
+                            {
+                                FreelancerId = (int)reader["FreelancerId"],
+                                AmountReceived = reader["AmountReceived"] != DBNull.Value ? (decimal)reader["AmountReceived"] : default(decimal),
+                                GithubLink = reader["GithubLink"] != DBNull.Value ? (string)reader["GithubLink"] : null,
+                                LinkedInLink = reader["LinkedInLink"] != DBNull.Value ? (string)reader["LinkedInLink"] : null,
+                                PerHourRate = reader["PerHourRate"] != DBNull.Value ? (int)reader["PerHourRate"] : default(int),
+                                Title = reader["Title"] != DBNull.Value ? (string)reader["Title"] : null,
+                                Intro = reader["Intro"] != DBNull.Value ? (string)reader["Intro"] : null,
+                                ProposalCount = 0 // Assuming this is never null and can default to 0
+                            };
+                        }
+                    }
+                }
+                if (freelancer != null)
+                {
+
+                    string jobsQuery = "SELECT COUNT(*) FROM Proposal WHERE FreelancerId = @freelancerId";
+                    using (SqlCommand cmd = new SqlCommand(jobsQuery, connect))
+                    {
+                        cmd.Parameters.AddWithValue("@freelancerId", freelancer.FreelancerId);
+                        freelancer.ProposalCount = (int)cmd.ExecuteScalar();
+                    }
+                }
+            }
+            return freelancer;
+        }
+
+        public void EditFreelancerProfile(Users user, Freelancer freelancer)
+        {
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Update Users table
+                        string updateUserSql = @"
+                    UPDATE Users
+                    SET FirstName = @FirstName,
+                        LastName = @LastName,
+                        Availability = @Availability,
+                        CNIC = @CNIC,
+                        PaypalEmail = @PaypalEmail,
+                        Phone = @Phone
+                    WHERE UserId = @UserId";
+
+                        using (SqlCommand command = new SqlCommand(updateUserSql, connection, transaction))
+                        {
+                            command.Parameters.AddWithValue("@UserId", user.UserId);
+                            command.Parameters.AddWithValue("@FirstName", user.FirstName);
+                            command.Parameters.AddWithValue("@LastName", user.LastName);
+                            command.Parameters.AddWithValue("@Availability", user.Availability ? 1 : 0);
+                            command.Parameters.AddWithValue("@CNIC", user.CNIC);
+                            command.Parameters.AddWithValue("@PaypalEmail", user.PaypalEmail);
+                            command.Parameters.AddWithValue("@Phone", user.Phone);
+                            command.ExecuteNonQuery();
+                        }
+
+                        // Update Freelancer table
+                        string updateFreelancerSql = @"
+                    UPDATE Freelancer
+                    SET Title = @Title,
+                        Intro = @Intro,
+                        GithubLink = @GithubLink,
+                        LinkedInLink = @LinkedInLink,
+                        PerHourRate = @PerHourRate
+                    WHERE UserId = @UserId"; 
+
+                        using (SqlCommand command = new SqlCommand(updateFreelancerSql, connection, transaction))
+                        {
+                            command.Parameters.AddWithValue("@UserId", user.UserId); 
+                            command.Parameters.AddWithValue("@Title", freelancer.Title ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@Intro", freelancer.Intro ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@GithubLink", freelancer.GithubLink ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@LinkedInLink", freelancer.LinkedInLink ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@PerHourRate", freelancer.PerHourRate);
+
+                            command.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                        Console.WriteLine("UPDATED");
+                    }
+                    catch
+                    {
+                        // Rollback the transaction if any error occurs
+                        transaction.Rollback();
+                        Console.WriteLine("ERROR");
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public void EditClientProfile(Users user)
+        {
+           
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+               
+                  
+                    string updateUserSql = @"
+                    UPDATE Users
+                    SET FirstName = @FirstName,
+                        LastName = @LastName,
+                        Availability = @Availability,
+                        CNIC = @CNIC,
+                        PaypalEmail = @PaypalEmail,
+                        Phone = @Phone
+                    WHERE UserId = @UserId";
+
+                        using (SqlCommand command = new SqlCommand(updateUserSql, connection))
+                        {
+                            command.Parameters.AddWithValue("@UserId", user.UserId);
+                            command.Parameters.AddWithValue("@FirstName", user.FirstName);
+                            command.Parameters.AddWithValue("@LastName", user.LastName);
+                            command.Parameters.AddWithValue("@Availability", user.Availability ? 1 : 0);
+                            command.Parameters.AddWithValue("@CNIC", user.CNIC);
+                            command.Parameters.AddWithValue("@PaypalEmail", user.PaypalEmail);
+                            command.Parameters.AddWithValue("@Phone", user.Phone);
+                            command.ExecuteNonQuery();
+                            Console.WriteLine("Updated");
+                        }   
+                
+            }
         }
 
         private string HashPassword(string password)
@@ -178,7 +397,5 @@ namespace FreelanceMarketPlace.Models.Repositories
 
             return providedHash == storedHash;
         }
-
-
     }
 }

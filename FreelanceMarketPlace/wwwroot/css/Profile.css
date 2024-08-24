@@ -1,0 +1,13 @@
+﻿,avatar-box{
+    position:relative;
+}
+
+.available-box{
+    position:absolute;
+    width:14px;
+    height:14px;
+    top:22px;
+    left:22px;
+    border-radius:100%;
+    border:1px solid #fff;
+}

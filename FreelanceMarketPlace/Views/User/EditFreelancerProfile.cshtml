@@ -1,0 +1,40 @@
+﻿@model FreelanceMarketPlace.Models.Entities.UserFreelancer
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
+    ViewData["Title"] = $"Edit {ViewBag.Role} Profile";
+}
+
+<h2 class="text-center text-capitalize">@ViewData["Title"]</h2>
+
+<form method="post" action="/User/EditFreelancerProfile" class="mt-4">
+    <partial name="_EditProfileForm" model="Model" />
+
+        <div class="form-group mt-3">
+            <label asp-for="Title" class="form-label">Freelancer Title</label>
+            <input asp-for="Title" class="form-control" placeholder="Enter Your Title">
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="form-group mt-3">
+            <label asp-for="Intro" class="form-label">Freelancer Intro</label>
+            <textarea asp-for="Intro" class="form-control" rows="6" placeholder="Enter Your Introduction"></textarea>
+            <span asp-validation-for="Intro" class="text-danger"></span>
+        </div>
+    <div class="form-group mt-3">
+        <label asp-for="PerHourRate" class="form-label">Per Hour Rate</label>
+        <input asp-for="PerHourRate" step=".01" type="number" class="form-control" placeholder="Enter Your Rate/hr">
+        <span asp-validation-for="PerHourRate" class="text-danger"></span>
+    </div>
+    <div class="form-group mt-3">
+        <label asp-for="GithubLink" class="form-label">Github Link</label>
+        <input asp-for="GithubLink" class="form-control"  placeholder="Enter Github Link" />
+        <span asp-validation-for="GithubLink" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="LinkedInLink" class="form-label">LinkedIn Link</label>
+        <input asp-for="LinkedInLink" class="form-control" placeholder="Enter LinkedIn Link" />
+        <span asp-validation-for="LinkedInLink" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary mt-4">Edit</button>
+</form>

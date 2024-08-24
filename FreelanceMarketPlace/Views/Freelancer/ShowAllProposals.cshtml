@@ -1,0 +1,42 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
+    ViewData["Title"] = "All Proposals";
+    var proposals = ViewData["proposals"] as List<FreelanceMarketPlace.Models.Entities.Proposal>;
+    ViewBag.NoDataMessage = "No Proposals yet!";
+}
+
+
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">@ViewData["Title"] </h1>
+
+    @if (proposals != null && proposals.Count > 0)
+    {
+        <div class="row">
+            @foreach (var proposal in proposals)
+            {
+                <div class="col-md-6  mb-4">
+                    <div class="card h-100 shadow-sm border">
+                        <div class="card-body">
+                            <h5 class="card-title limited-text">@proposal.ProposalDescription</h5>
+                            <p class="card-text">
+                                <strong>Proposal Bid:</strong> $@proposal.ProposalBid.ToString() <br />
+                                <strong>Proposal Status:</strong> @proposal.ProposalStatus <br />
+                                <small class="text-muted">Posted on @proposal.CreatedOn</small>
+                            </p>
+                            <div>
+                                <a href="@Url.Action("ProposalDetails", new { id = proposal.ProposalId })" class="text-success text-decoration-none">See more...</a>
+                            </div>
+                          
+                            <a href="@Url.Action("JobDetails", new { id = proposal.JobId })" class="btn btn-success btn-sm my-1">View Job Posting</a>
+                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <partial name="_NoDataAlert" />
+    }
+</div>

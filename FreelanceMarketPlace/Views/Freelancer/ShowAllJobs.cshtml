@@ -2,6 +2,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
     ViewData["Title"] = "All Jobs";
     var jobs = ViewData["jobs"] as List<FreelanceMarketPlace.Models.Entities.Job>;
+    ViewBag.NoDataMessage = "No Jobs available!";
 }
 
 
@@ -10,41 +11,10 @@
 
     @if (jobs != null)
     {
-        <div class="row">
-            @foreach (var job in jobs)
-            {
-                <div class="col-md-6  mb-4">
-                    <div class="card h-100 shadow-sm border">
-                        <div class="card-body">
-                            <h5 class="card-title limited-text">@job.JobDescription</h5>
-                            <p class="card-text">
-                                <strong>Budget:</strong> $@job.JobBudget.ToString() <br />
-                                <strong>Level:</strong> @job.JobLevel <br />
-                                <strong>Completion Time:</strong> @job.CompletionTime <br />
-                                <small class="text-muted">Posted on @job.CreatedOn.ToString("MMM dd, yyyy")</small>
-                            </p>
-                            <div class="jobSkills">
-                                @if (job.Skills != null)
-                                {
-                                    @foreach (var skill in job.Skills)
-                                    {
-                                        <span class="badge badge-pill mb-2 skill">@skill</span>
-                                    }
-                                }
-
-
-                            </div>
-                            <a href="@Url.Action("JobDetails", new { id = job.JobId })" class="btn btn-success">See more</a>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
+        <partial name="_AllJobs" model="@jobs" />
     }
     else
     {
-        <div class="alert alert-info" role="alert">
-            No jobs available.
-        </div>
+        <partial name="_NoDataAlert" />
     }
 </div>

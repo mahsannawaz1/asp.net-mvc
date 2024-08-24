@@ -1,0 +1,15 @@
+﻿@model FreelanceMarketPlace.Models.Entities.UserClient
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Path to your layout file
+    ViewData["Title"] = $"Edit {ViewBag.Role} Profile";
+}
+
+<h2 class="text-center text-capitalize">@ViewData["Title"]</h2>
+
+<form method="post" action="/User/EditClientProfile" class="mt-4">
+
+    <partial name="_EditProfileForm" model="Model" />
+    <button type="submit" class="btn btn-primary mt-4">Edit</button>
+
+</form>

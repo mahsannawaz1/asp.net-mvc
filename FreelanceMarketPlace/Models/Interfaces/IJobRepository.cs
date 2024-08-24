@@ -12,5 +12,7 @@ namespace FreelanceMarketPlace.Models.Interfaces
         public void DeleteJob(int jobId);
         public List<Job> ShowAllJobs(int ClientId);
         public int GetClientIdByEmail(string email);
+
+        public FreelancerProposals GetProposalByIdOnJob(int proposalId);
     }
 }

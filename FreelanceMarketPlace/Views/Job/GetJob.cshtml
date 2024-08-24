@@ -105,7 +105,7 @@
                                 
                             </p>
                             <div class="py-2">
-                                <a href="" class="text-success text-decoration-none">See More...</a>
+                                <a href="@Url.Action("GetProposal", new { id = proposal.ProposalId })" class="text-success text-decoration-none">See More...</a>
                            </div>
 
                             @if (@proposal.ProposalStatus == "not seen")

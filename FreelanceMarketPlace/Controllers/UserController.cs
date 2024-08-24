@@ -16,12 +16,33 @@ namespace FreelanceMarketPlace.Controllers
 
 
         [HttpGet]
-        public ViewResult Profile()
+        public IActionResult Profile()
         {
             bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
             HttpContext.Request.Cookies.TryGetValue("Role", out string role);
             ViewBag.CurrentUser = authToken;
             ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            if(email == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+           
+            Users user = _userRepository.GetUserProfile(email);
+            ViewData["user"] = user;
+            
+            if (role == "freelancer")
+            {
+               Freelancer freelancer = _userRepository.GetFreelancerProfile(user.UserId);
+               ViewData["freelancer"] = freelancer;
+               
+            }
+            else if (role == "client")
+            {
+                Client client = _userRepository.GetClientProfile(user.UserId);
+                ViewData["client"] = client;
+                
+            }
             return View();
         }
 
@@ -97,8 +118,6 @@ namespace FreelanceMarketPlace.Controllers
                         UserPassword = user.UserPassword,
                     };
                     bool result = _userRepository.SignUp(NewUser, role);
-                    Console.WriteLine($"Role: {role}, Result: {result}");
-
                     if (result)
                     {
                         return RedirectToAction("SignIn");
@@ -116,6 +135,92 @@ namespace FreelanceMarketPlace.Controllers
             }
 
             return View(user);
+        }
+
+
+        [Route("User/EditFreelancerProfile/{id}")]
+        public ViewResult EditFreelancerProfile(int id)
+        {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            ViewBag.userId = id;
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditFreelancerProfile(UserFreelancer data)
+        {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            Users user = new Users
+            {
+                UserId = data.UserId,
+                FirstName = data.FirstName,
+                LastName = data.LastName,
+                Availability = (int)data.Availability == 1 ? true : false,
+                CNIC = data.CNIC,
+                PaypalEmail = data.PaypalEmail,
+                Phone = data.Phone
+            };
+
+            Freelancer freelancer = new Freelancer {
+                Title  = data.Title,
+                Intro = data.Intro,
+                GithubLink = data.GithubLink,
+                LinkedInLink = data.LinkedInLink,
+                PerHourRate = data.PerHourRate,
+            };
+            _userRepository.EditFreelancerProfile(user, freelancer);
+
+            return RedirectToAction("Profile", "User");
+        }
+
+        [Route("User/EditClientProfile/{id}")]
+        public ViewResult EditClientProfile(int id)
+        {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            ViewBag.userId = id;
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult EditClientProfile(UserClient data)
+        {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            Console.WriteLine(data.PaypalEmail);
+            Console.WriteLine(data.UserId);
+            Console.WriteLine(data.FirstName);
+            Console.WriteLine(data.LastName);
+            Console.WriteLine(data.Phone);
+            Console.WriteLine(data.CNIC);
+            Users user = new Users
+            {
+                UserId = data.UserId,
+                FirstName = data.FirstName,
+                LastName = data.LastName,       
+                Availability = (int)data.Availability == 1 ? true : false,
+                CNIC = data.CNIC,
+                PaypalEmail = data.PaypalEmail,
+                Phone = data.Phone
+            };
+
+
+            _userRepository.EditClientProfile(user);
+            return RedirectToAction("Profile", "User");
         }
     }
 }

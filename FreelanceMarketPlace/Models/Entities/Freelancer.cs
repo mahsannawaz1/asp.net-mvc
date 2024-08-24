@@ -10,6 +10,8 @@
         public string LinkedInLink { get; set; }
         public decimal PerHourRate { get; set; }
         public string WorkingHours { get; set; }
-        public int CardId { get; set; }
+
+        public int ProposalCount { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }

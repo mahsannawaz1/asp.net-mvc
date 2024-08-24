@@ -4,6 +4,7 @@
     {
         public int ClientId { get; set; }
         public decimal AmountSpent { get; set; }
-        public int CardId { get; set; }
+        public int JobCount { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }

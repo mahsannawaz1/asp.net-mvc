@@ -7,5 +7,10 @@ namespace FreelanceMarketPlace.Models.Interfaces
         public List<Job> ShowAllJobs();
 
         public (Job job, Client client, Users user) JobDetails(int JobId);
+        public List<Proposal> GetProposalsForFreelancer(int freelancerId);
+
+        public int GetFreelancerIdByEmail(string email);
+
+        public Proposal ProposalDetails(int ProposalId);
     }
 }

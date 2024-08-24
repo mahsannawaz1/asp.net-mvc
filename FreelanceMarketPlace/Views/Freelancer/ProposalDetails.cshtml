@@ -2,7 +2,7 @@
 
     @using Humanizer
     ViewData["Title"] = "Proposal Details";
-    var proposal = ViewData["proposal"] as FreelanceMarketPlace.Models.Entities.FreelancerProposals;
+    var proposal = ViewData["proposal"] as FreelanceMarketPlace.Models.Entities.Proposal;
     string statusClass = proposal?.ProposalStatus switch
     {
         "not seen" => "text-info",
@@ -26,7 +26,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Job Details</h5>
+                    <h5 class="card-title">Proposal Details</h5>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item text-capitalize"><strong>Bid:</strong> $@proposal.ProposalBid</li>
                         <li class="list-group-item text-capitalize"><strong>Project Type:</strong> One-time project</li>
@@ -42,19 +42,5 @@
 
 
         </div>
-        <div class="card mb-4">
-
-            <div class="p-0 card-body">
-                <h5 class="card-title">About The Freelancer</h5>
-                <p class="text-secondary">Member since @proposal?.CreatedOn.Value.Year</p>
-                <div class="d-flex gap-4">
-                    <div class="mb-2">
-                        <p class="fw-bold m-0 p-0">Pakistan</p>
-                        <p class="m-0 p-0">Lahore</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>

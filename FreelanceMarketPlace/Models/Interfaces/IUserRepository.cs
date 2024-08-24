@@ -8,7 +8,15 @@ namespace FreelanceMarketPlace.Models.Interfaces
 
         public bool SignUp(Users user,string role);
 
-        public Users Profile(Users user);
+        public Users GetUserProfile(string email);
+
+        public Client GetClientProfile(int userId);
+
+        public Freelancer GetFreelancerProfile(int userId);
+
+        public void EditFreelancerProfile(Users user, Freelancer freelancer);
+
+        public void EditClientProfile(Users user);
 
     }
 }

@@ -68,7 +68,7 @@ namespace FreelanceMarketPlace.Controllers
                 JobId = (int)proposal.JobId,
             };
             _proposalRepository.SendProposal(newProposal);
-            return View();
+            return RedirectToAction("ShowAllProposals", "Freelancer");
         }
 
 
@@ -85,15 +85,21 @@ namespace FreelanceMarketPlace.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetProposal(int porposalId)
+        [Route("GetProposal/{proposalId}")]
+        public IActionResult GetProposal(int proposalId)
         {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            FreelancerProposals proposal = _proposalRepository.GetProposal(proposalId);
+            ViewData["proposal"] = proposal;
             return View();
         }
 
         [HttpPost]
         public IActionResult UpdateStatus(int proposalId,string status)
         {
-            Console.WriteLine($"Status: {status}");
             bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
             HttpContext.Request.Cookies.TryGetValue("Role", out string role);
             ViewBag.CurrentUser = authToken;

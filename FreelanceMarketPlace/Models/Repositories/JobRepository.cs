@@ -111,7 +111,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             string sql = @"
     SELECT j.JobId, j.JobDescription, j.JobBudget, j.JobStatus, j.JobLevel, j.CompletionTime, 
            j.CreatedOn, j.UpdatedOn, j.CompletedOn, 
-           c.ClientId, c.AmountSpent, c.CardId, c.UserId, 
+           c.ClientId, c.AmountSpent, 
            u.UserId, u.UserEmail, u.FirstName, u.LastName, u.Role, u.Phone
     FROM Job j
     JOIN Client c ON j.ClientId = c.ClientId
@@ -152,12 +152,12 @@ namespace FreelanceMarketPlace.Models.Repositories
                         // Populate User object
                         user = new Users
                         {
-                            UserId = reader.GetInt32(13),
-                            UserEmail = reader.GetString(14),
-                            FirstName = reader.GetString(15),
-                            LastName = reader.GetString(16),
-                            Role = reader.GetString(17),
-                            Phone = reader.IsDBNull(18) ? null : reader.GetString(18)
+                            UserId = reader.GetInt32(11),
+                            UserEmail = reader.GetString(12),
+                            FirstName = reader.GetString(13),
+                            LastName = reader.GetString(14),
+                            Role = reader.GetString(15),
+                            Phone = reader.IsDBNull(16) ? null : reader.GetString(16)
                         };
                     }
                 }
@@ -173,12 +173,143 @@ namespace FreelanceMarketPlace.Models.Repositories
 
         public void UpdateJob(Job job)
         {
-            // Implementation for updating a job
+            if (job == null)
+            {
+                throw new ArgumentNullException(nameof(job), "Job object is null");
+            }
+
+            try
+            {
+                using (SqlConnection connect = new SqlConnection(ConnectionString))
+                {
+                    connect.Open();
+
+                    // Define the query for updating the job
+                    string updateQuery = @"
+            UPDATE Job
+            SET 
+                JobDescription = @JobDescription,
+                JobBudget = @JobBudget,
+                UpdatedOn = @UpdatedOn,
+                JobLevel = @JobLevel,
+                CompletionTime = @CompletionTime
+            WHERE JobId = @JobId";
+
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, connect))
+                    {
+                        // Add parameters for the job
+                        cmd.Parameters.AddWithValue("@JobDescription", job.JobDescription);
+                        cmd.Parameters.AddWithValue("@JobBudget", job.JobBudget);
+                        cmd.Parameters.AddWithValue("@UpdatedOn", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@JobLevel", job.JobLevel);
+                        cmd.Parameters.AddWithValue("@CompletionTime", job.CompletionTime);
+                        cmd.Parameters.AddWithValue("@JobId", job.JobId);
+
+                        // Execute the query to update the job in the database
+                        cmd.ExecuteNonQuery();
+
+                        Console.WriteLine("Job Updated!");
+                    }
+
+                    // Now update the skills if any are provided
+                    if (job.Skills.Count > 0)
+                    {
+                        // Retrieve existing skills and get their IDs
+                        var jobTuples = new (int Id, string Name)[job.Skills.Count];
+
+                        for (int i = 0; i < job.Skills.Count; i++)
+                        {
+                            Console.WriteLine(job.Skills[i]);
+                            int skillId = GetOrCreateSkillId(job.Skills[i], connect);  // Get existing skill or create if not present
+                            jobTuples[i].Id = skillId;
+                            jobTuples[i].Name = job.Skills[i];
+                        }
+
+                        // Now we need to update the JobSkill table for this job
+                        for (int i = 0; i < job.Skills.Count; i++)
+                        {
+                            int skillId = jobTuples[i].Id;
+                            if (!JobSkillExists(job.JobId, skillId, connect))
+                            {
+                                string insertJobSkillQuery = @"
+                        INSERT INTO JobSkill (JobId, SkillId)
+                        VALUES (@JobId, @SkillId)";
+
+                                using (SqlCommand cmd = new SqlCommand(insertJobSkillQuery, connect))
+                                {
+                                    cmd.Parameters.Add("@JobId", SqlDbType.Int).Value = job.JobId;
+                                    cmd.Parameters.Add("@SkillId", SqlDbType.Int).Value = skillId;
+
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                // Handle SQL-specific exceptions here
+                Console.WriteLine($"SQL Error: {sqlEx.Message}");
+                throw new Exception("Database operation failed", sqlEx);
+            }
+            catch (Exception ex)
+            {
+                // Handle general exceptions here
+                Console.WriteLine($"An error occurred: {ex}");
+                throw new Exception("An error occurred while updating the job", ex);
+            }
         }
 
         public void DeleteJob(int jobId)
         {
-            // Implementation for deleting a job
+           
+            // SQL queries for deleting data
+            string deleteProposalsQuery = "DELETE FROM Proposal WHERE JobId = @JobId;";
+            string deleteJobSkillsQuery = "DELETE FROM JobSkill WHERE JobId = @JobId;";
+            string deleteJobQuery = "DELETE FROM Job WHERE JobId = @JobId;";
+
+            // Use a transaction to ensure data integrity
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Delete proposals related to the job
+                        using (SqlCommand deleteProposalsCmd = new SqlCommand(deleteProposalsQuery, connection, transaction))
+                        {
+                            deleteProposalsCmd.Parameters.AddWithValue("@JobId", jobId);
+                            deleteProposalsCmd.ExecuteNonQuery();
+                        }
+
+                        // Delete job skills related to the job
+                        using (SqlCommand deleteJobSkillsCmd = new SqlCommand(deleteJobSkillsQuery, connection, transaction))
+                        {
+                            deleteJobSkillsCmd.Parameters.AddWithValue("@JobId", jobId);
+                            deleteJobSkillsCmd.ExecuteNonQuery();
+                        }
+
+                        // Delete the job itself
+                        using (SqlCommand deleteJobCmd = new SqlCommand(deleteJobQuery, connection, transaction))
+                        {
+                            deleteJobCmd.Parameters.AddWithValue("@JobId", jobId);
+                            deleteJobCmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                        Console.WriteLine("Job and related data deleted successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback the transaction in case of error
+                        transaction.Rollback();
+                        Console.WriteLine($"Error occurred: {ex.Message}");
+                    }
+                }
+            }
         }
 
         public List<Job> ShowAllJobs(int clientId)
@@ -300,6 +431,54 @@ namespace FreelanceMarketPlace.Models.Repositories
             return clientId; // Return the found ClientId or -1 if no client was found
         }
 
+        public FreelancerProposals GetProposalByIdOnJob(int proposalId)
+        {
+            FreelancerProposals proposal = new FreelancerProposals();
+            string query = @"
+            SELECT 
+                f.FreelancerId, u.UserId, u.UserEmail, u.FirstName, u.LastName,
+                p.ProposalId, p.ProposalDescription, p.ProposalBid, 
+                p.CompletionTime, p.ProposalStatus, p.JobId, 
+                p.CreatedOn, p.UpdatedOn
+            FROM Freelancer f
+            INNER JOIN Users u ON f.UserId = u.UserId
+            INNER JOIN Proposal p ON f.FreelancerId = p.FreelancerId
+            WHERE p.ProposalId = @ProposalId";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@ProposalId", proposalId);
+
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        proposal = new FreelancerProposals
+                        {
+                            FreelancerId = reader.GetInt32(0),
+                            UserId = reader.GetInt32(1),
+                            UserEmail = reader.GetString(2),
+                            FirstName = reader.GetString(3),
+                            LastName = reader.GetString(4),
+                            ProposalId = reader.GetInt32(5),
+                            ProposalDescription = reader.GetString(6),
+                            ProposalBid = reader.GetDecimal(7),
+                            CompletionTime = reader.IsDBNull(8) ? null : reader.GetString(8),
+                            ProposalStatus = reader.GetString(9),
+                            JobId = reader.GetInt32(10),
+                            CreatedOn = reader.IsDBNull(11) ? (DateTime?)null : reader.GetDateTime(11),
+                            UpdatedOn = reader.IsDBNull(12) ? (DateTime?)null : reader.GetDateTime(12),
+                        };
+                    }
+                }
+            }
+
+
+            return proposal;
+        }
 
         private bool JobSkillExists(int jobId, int skillId, SqlConnection connection)
         {
@@ -385,7 +564,6 @@ namespace FreelanceMarketPlace.Models.Repositories
             F.LinkedinLink,
             F.PerHourRate,
             F.WorkingHours,
-            F.CardId,
             F.UserId,
             U.UserEmail,
             U.FirstName,
@@ -428,7 +606,6 @@ namespace FreelanceMarketPlace.Models.Repositories
                                     LinkedinLink = reader["LinkedinLink"].ToString(),
                                     PerHourRate = reader["PerHourRate"] != DBNull.Value ? (int)reader["PerHourRate"] : 0,
                                     WorkingHours = reader["WorkingHours"] != DBNull.Value ? (int)reader["WorkingHours"] : 0,
-                                    CardId = reader["CardId"] != DBNull.Value ? (int)reader["CardId"] : (int?)null,
                                     UserId = Convert.ToInt32(reader["UserId"]),
                                     UserEmail = reader["UserEmail"].ToString(),
                                     FirstName = reader["FirstName"].ToString(),
@@ -456,11 +633,5 @@ namespace FreelanceMarketPlace.Models.Repositories
             return freelancerProposals;
        
         }
-
-            
-        
-
-
-
     }
 }

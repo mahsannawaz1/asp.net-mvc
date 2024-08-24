@@ -9,7 +9,7 @@
         public string ProposalStatus { get; set; }
         public int JobId { get; set; }
         public string CompletionTime { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public DateTime UpdatedOn { get; set; }
+        public DateTime? CreatedOn { get; set; }
+        public DateTime? UpdatedOn { get; set; }
     }
 }

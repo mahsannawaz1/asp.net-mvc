@@ -38,9 +38,62 @@ namespace FreelanceMarketPlace.Models.Repositories
                 }
             }
         }
-        public Proposal GetProposal(int proposalId)
+        public FreelancerProposals GetProposal(int proposalId)
         {
-            return new Proposal();
+            FreelancerProposals proposal = new FreelancerProposals();
+            string query = @"
+            SELECT 
+                f.FreelancerId, f.Title, f.Intro, f.AmountReceived, f.GithubLink, 
+                f.LinkedinLink, f.PerHourRate, f.WorkingHours,
+                u.UserId, u.UserEmail, u.FirstName, u.LastName,
+                p.ProposalId, p.ProposalDescription, p.ProposalBid, 
+                p.CompletionTime, p.ProposalStatus, p.JobId, 
+                p.CreatedOn, p.UpdatedOn
+            FROM Freelancers f
+            INNER JOIN Users u ON f.UserId = u.UserId
+            INNER JOIN Proposals p ON f.FreelancerId = p.FreelancerId
+            WHERE p.ProposalId = @ProposalId";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@ProposalId", proposalId);
+
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        proposal = new FreelancerProposals
+                        {
+                            FreelancerId = reader.GetInt32(0),
+                            Title = reader.GetString(1),
+                            Intro = reader.GetString(2),
+                            AmountReceived = reader.GetDecimal(3),
+                            GithubLink = reader.IsDBNull(4) ? null : reader.GetString(4),
+                            LinkedinLink = reader.IsDBNull(5) ? null : reader.GetString(5),
+                            PerHourRate = reader.GetInt32(6),
+                            WorkingHours = reader.GetInt32(7),
+                            UserId = reader.GetInt32(8),
+                            UserEmail = reader.GetString(9),
+                            FirstName = reader.GetString(10),
+                            LastName = reader.GetString(11),
+                            ProposalId = reader.GetInt32(12),
+                            ProposalDescription = reader.GetString(13),
+                            ProposalBid = reader.GetDecimal(14),
+                            CompletionTime = reader.GetString(15),
+                            ProposalStatus = reader.GetString(16),
+                            JobId = reader.GetInt32(17),
+                            CreatedOn = reader.IsDBNull(18) ? (DateTime?)null : reader.GetDateTime(18),
+                            UpdatedOn = reader.IsDBNull(19) ? (DateTime?)null : reader.GetDateTime(20),
+                        };
+                    }
+                }
+            }
+
+
+            return proposal;
         }
         public void DeleteProposal(int proposalId)
         {

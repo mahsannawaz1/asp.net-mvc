@@ -117,7 +117,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             string sql = @"
     SELECT j.JobId, j.JobDescription, j.JobBudget, j.JobStatus, j.JobLevel, j.CompletionTime, 
            j.CreatedOn, j.UpdatedOn, j.CompletedOn, 
-           c.ClientId, c.AmountSpent, c.CardId, c.UserId, 
+           c.ClientId, c.AmountSpent,
            u.UserId, u.UserEmail, u.FirstName, u.LastName, u.Role, u.Phone
     FROM Job j
     JOIN Client c ON j.ClientId = c.ClientId
@@ -158,12 +158,12 @@ namespace FreelanceMarketPlace.Models.Repositories
                         // Populate User object
                         user = new Users
                         {
-                            UserId = reader.GetInt32(13),
-                            UserEmail = reader.GetString(14),
-                            FirstName = reader.GetString(15),
-                            LastName = reader.GetString(16),
-                            Role = reader.GetString(17),
-                            Phone = reader.IsDBNull(18) ? null : reader.GetString(18)
+                            UserId = reader.GetInt32(11),
+                            UserEmail = reader.GetString(12),
+                            FirstName = reader.GetString(13),
+                            LastName = reader.GetString(14),
+                            Role = reader.GetString(15),
+                            Phone = reader.IsDBNull(16) ? null : reader.GetString(16)
                         };
                     }
                 }
@@ -176,6 +176,173 @@ namespace FreelanceMarketPlace.Models.Repositories
             return (job, client, user);
         }
 
+        public List<Proposal> GetProposalsForFreelancer(int freelancerId)
+        {
+            List<Proposal> proposals = new List<Proposal>();
+
+            try
+            {
+                // Open a connection to the database
+                using (SqlConnection connect = new SqlConnection(ConnectionString))
+                {
+                    connect.Open();
+
+                    // Define the query to get jobs for a specific client
+                    string query = @"
+                SELECT ProposalId,ProposalDescription,ProposalBid,ProposalStatus,CreatedOn,UpdatedOn,JobId
+                FROM Proposal WHERE freelancerid = @FreelancerId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connect))
+                    {
+                        // Add parameter for ClientId
+                        cmd.Parameters.AddWithValue("@FreelancerId",freelancerId);
+
+                        // Execute the query and read the results
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                // Create a new Proposal object and populate it with data
+                                Proposal proposal = new Proposal
+                                {
+                                    ProposalId = (int)reader["ProposalId"],
+                                    ProposalDescription = reader["ProposalDescription"].ToString(),
+                                    ProposalBid = (decimal)reader["ProposalBid"],
+                                    ProposalStatus = (string)reader["ProposalStatus"],
+                                    CreatedOn = (DateTime)reader["CreatedOn"],
+                                    UpdatedOn = (DateTime)reader["UpdatedOn"],
+                                    JobId = (int)reader["JobId"],
+                                };
+
+                                // Add the Proposal object to the list
+                                proposals.Add(proposal);
+                            }
+                        }
+                    }
+                   
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                // Handle SQL-specific exceptions here
+                Console.WriteLine($"SQL Error: {sqlEx.Message}");
+                throw new Exception("Database operation failed", sqlEx);
+            }
+            catch (Exception ex)
+            {
+                // Handle general exceptions here
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw new Exception("An error occurred while retrieving the proposals", ex);
+            }
+
+            // Return the list of proposals
+            return proposals;
+        }
+
+        public int GetFreelancerIdByEmail(string email)
+        {
+            int userId = -1; // Assign a default value indicating no user found
+            int freelancerId = -1; // Assign a default value indicating no client found
+
+            using (SqlConnection connect = new SqlConnection(ConnectionString))
+            {
+                connect.Open();
+
+                // Fetch UserId from Users table by email
+                string userQuery = "SELECT UserId FROM Users WHERE UserEmail = @Email";
+                using (SqlCommand cmd = new SqlCommand(userQuery, connect))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows && reader.Read())
+                        {
+                            userId = Convert.ToInt32(reader["UserId"]);
+                        }
+                    }
+                }
+
+                // If UserId is found, fetch the FreelancerId from the Freelancer table using the UserId as a foreign key
+                if (userId != -1)
+                {
+                    string clientQuery = "SELECT FreelancerId FROM Freelancer WHERE UserId = @UserId";
+                    using (SqlCommand cmd = new SqlCommand(clientQuery, connect))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userId);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.HasRows && reader.Read())
+                            {
+                                freelancerId = Convert.ToInt32(reader["FreelancerId"]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return freelancerId; // Return the found FreelancerId or -1 if no client was found
+        }
+
+        public Proposal ProposalDetails(int ProposalId)
+        {
+            Proposal proposal = new Proposal();
+
+            try
+            {
+                // Open a connection to the database
+                using (SqlConnection connect = new SqlConnection(ConnectionString))
+                {
+                    connect.Open();
+
+                    // Define the query to get jobs for a specific client
+                    string query = @"
+                SELECT ProposalId,ProposalDescription,ProposalBid,ProposalStatus,CreatedOn,UpdatedOn,JobId
+                FROM Proposal WHERE ProposalId = @ProposalId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connect))
+                    {
+                        // Add parameter for ClientId
+                        cmd.Parameters.AddWithValue("@ProposalId", ProposalId);
+
+                        // Execute the query and read the results
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                proposal = new Proposal
+                                {
+                                    ProposalId = reader.GetInt32(reader.GetOrdinal("ProposalId")),
+                                    ProposalDescription = reader.IsDBNull(reader.GetOrdinal("ProposalDescription")) ? null : reader.GetString(reader.GetOrdinal("ProposalDescription")),
+                                    ProposalBid = reader.IsDBNull(reader.GetOrdinal("ProposalBid")) ? 0 : reader.GetDecimal(reader.GetOrdinal("ProposalBid")),
+                                    ProposalStatus = reader.IsDBNull(reader.GetOrdinal("ProposalStatus")) ? null : reader.GetString(reader.GetOrdinal("ProposalStatus")),
+                                    CreatedOn = reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("CreatedOn")),
+                                    UpdatedOn = reader.IsDBNull(reader.GetOrdinal("UpdatedOn")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("UpdatedOn")),
+                                    JobId = reader.IsDBNull(reader.GetOrdinal("JobId")) ? 0 : reader.GetInt32(reader.GetOrdinal("JobId")),
+                                };
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                // Handle SQL-specific exceptions here
+                Console.WriteLine($"SQL Error: {sqlEx.Message}");
+                throw new Exception("Database operation failed", sqlEx);
+            }
+            catch (Exception ex)
+            {
+                // Handle general exceptions here
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw new Exception("An error occurred while retrieving the proposal", ex);
+            }
+
+            // Return the list of proposals
+            return proposal;
+        }
 
     }
 }

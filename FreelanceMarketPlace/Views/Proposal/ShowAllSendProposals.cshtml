@@ -3,6 +3,8 @@
     @using Humanizer
     ViewData["Title"] = "Your Proposals";
     var proposals = ViewData["proposals"] as List<FreelanceMarketPlace.Models.Entities.FreelancerProposals>;
+    ViewBag.NoDataMessage = "No Jobs available!";
+
     
 }
 
@@ -34,12 +36,6 @@
                             <div class="py-2">
                                 <a href="/Freelancer/JobDetails/@proposal.JobId" class="text-success text-decoration-none">View Job Posting</a>
                             </div>
-
-
-                           
-
-
-                            @*  <a href="@Url.Action("GetJob", new { id = job.JobId })" class="btn btn-success">See more</a> *@
                         </div>
                     </div>
                 </div>
@@ -48,8 +44,6 @@
     }
     else
     {
-        <div class="alert alert-danger" role="alert">
-            No proposals on this job.
-        </div>
+        <partial name="_NoDataAlert" />
     }
 </div>
