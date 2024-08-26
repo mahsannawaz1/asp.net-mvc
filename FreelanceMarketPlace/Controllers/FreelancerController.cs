@@ -1,6 +1,7 @@
 ﻿using FreelanceMarketPlace.Models.Entities;
 using FreelanceMarketPlace.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace FreelanceMarketPlace.Controllers
 {
@@ -15,32 +16,40 @@ namespace FreelanceMarketPlace.Controllers
 
 
         [HttpGet]
-        public IActionResult ShowAllJobs()
+        public IActionResult ShowAllJobs(string levels = null, string sortBy = "")
         {
-
-            List<Job> jobs = new List<Job>(); // Initialize the list
+            List<Job> jobs = new List<Job>();
             bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
             HttpContext.Request.Cookies.TryGetValue("Role", out string role);
             ViewBag.CurrentUser = authToken;
             ViewBag.Role = role;
 
+            
+
             try
             {
-             
-                jobs = _freelancerRepository.ShowAllJobs();
+                List<string> levelsList = new List<string>();
+                if (!string.IsNullOrEmpty(levels))
+                {
+                    levelsList = JsonConvert.DeserializeObject<List<string>>(levels);
+                }
+                jobs = _freelancerRepository.ShowAllJobs(levelsList, sortBy);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
-                // Log the exception details
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
+            // Check if the request is made via AJAX
+            if (HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("~/Views/Shared/_AllJobs.cshtml", jobs); // Return the partial view with the filtered jobs
+            }
 
             ViewData["jobs"] = jobs;
             return View();
         }
-
 
         [Route("Freelancer/JobDetails/{id}")]
         public IActionResult JobDetails(int id)
@@ -83,7 +92,6 @@ namespace FreelanceMarketPlace.Controllers
             HttpContext.Request.Cookies.TryGetValue("Role", out string role);
             ViewBag.CurrentUser = authToken;
             ViewBag.Role = role;
-            Console.WriteLine(id);
             Proposal proposal = _freelancerRepository.ProposalDetails(id);           
             ViewData["proposal"] = proposal;
             return View();

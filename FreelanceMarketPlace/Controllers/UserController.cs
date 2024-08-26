@@ -222,5 +222,52 @@ namespace FreelanceMarketPlace.Controllers
             _userRepository.EditClientProfile(user);
             return RedirectToAction("Profile", "User");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProfilePicture(IFormFile ProfilePicture)
+        {
+            bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
+            HttpContext.Request.Cookies.TryGetValue("Role", out string role);
+            ViewBag.CurrentUser = authToken;
+            ViewBag.Role = role;
+            string email = HttpContext.Request.Cookies["AuthToken"];
+            if (email == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            if (ProfilePicture != null && ProfilePicture.Length > 0)
+            {
+                // Define the directory path to save the file
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads");
+
+                // Ensure the directory exists
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                // Get the file name and create the full path
+                string fileName = Path.GetFileName(ProfilePicture.FileName);
+                string filePath = Path.Combine(path, fileName);
+
+                // Save the file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ProfilePicture.CopyToAsync(stream); // No need to await, since we're doing it synchronously
+                }
+
+                // Save the file path to the database
+                string fileUrl = $"/Uploads/{fileName}";
+
+                // Use the method to update the database
+                _userRepository.EditProfilePicture(email, fileUrl);
+
+                return Json(new { success = true, message = "Profile picture updated and saved successfully!" });
+            }
+            else
+            {
+                return Json(new { success = false, message = "No file was uploaded." });
+            }
+        }
     }
 }

@@ -312,7 +312,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             }
         }
 
-        public List<Job> ShowAllJobs(int clientId)
+        public List<Job> ShowAllJobs(int clientId, List<string> levels, string sortBy)
         {
             List<Job> jobs = new List<Job>();
 
@@ -328,11 +328,27 @@ namespace FreelanceMarketPlace.Models.Repositories
                 SELECT JobId, JobDescription, JobBudget, CreatedOn, UpdatedOn, JobLevel, ClientId, CompletionTime
                 FROM Job
                 WHERE ClientId = @ClientId";
+                    if (levels != null && levels.Count > 0)
+                    {
+                        query += " AND JobLevel IN (" + string.Join(",", levels.Select((_, i) => $"@level{i}")) + ")";
+                    }
+
+                    if (!string.IsNullOrEmpty(sortBy))
+                    {
+                        query += " ORDER BY CreatedOn DESC"; // Ensure there's a space before ORDER BY
+                    }
 
                     using (SqlCommand cmd = new SqlCommand(query, connect))
                     {
                         // Add parameter for ClientId
                         cmd.Parameters.AddWithValue("@ClientId", clientId);
+                        if (levels != null && levels.Count > 0)
+                        {
+                            for (int i = 0; i < levels.Count; i++)
+                            {
+                                cmd.Parameters.AddWithValue($"@level{i}", levels[i]);
+                            }
+                        }
 
                         // Execute the query and read the results
                         using (SqlDataReader reader = cmd.ExecuteReader())
@@ -381,6 +397,7 @@ namespace FreelanceMarketPlace.Models.Repositories
             }
 
             // Return the list of jobs
+
             return jobs;
         }
 

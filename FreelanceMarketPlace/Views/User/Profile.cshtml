@@ -1,4 +1,6 @@
-﻿@{
+﻿@model FreelanceMarketPlace.Models.Entities.Users
+
+@{
     ViewData["Title"] = "Profile";
     var user = ViewData["user"] as FreelanceMarketPlace.Models.Entities.Users;
     var freelancer = ViewData["freelancer"] as FreelanceMarketPlace.Models.Entities.Freelancer;
@@ -11,12 +13,24 @@
 
 <div class="container">
 
-   
+        <partial name="_ProfilePictureModal" />
         <!-- Profile Picture and Header -->
         <div class="d-flex align-items-center gap-3">
             <div class="position-relative">
+            <button type="button" class="btn btn-sm btn-dark btn-primary position-absolute profile-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span> <i class="fa-solid fa-pen"></i>  Edit</span>
+            </button>
             <div class="available-box @available_bg"></div>
-                <img src="https://picsum.photos/200/200" alt="Profile Picture" class="img-fluid rounded-circle mb-3">
+           
+                    @if (user.ProfilePicture != null)
+                    {
+                        <img src="@user.ProfilePicture" alt="Profile Picture" class="img-fluid rounded-circle mb-3 avatar-img " />
+                    }
+                    else
+                    {
+                <img src="~/Uploads/default_profile.png" alt="Profile Picture" class="img-fluid rounded-circle mb-3 avatar-img" />
+                    }
+                
             </div>
        
         
@@ -113,7 +127,11 @@
             <div class="col-md-9 ">
                 <div class="d-flex justify-content-between mb-3">
                     <h4 class="fw-bold">@freelancer.Title</h4>
-                    <h4 class="fw-bold">$@freelancer.PerHourRate/hr</h4>
+                    @if(freelancer.PerHourRate != 0)
+                    {
+                        <h4 class="fw-bold">$@freelancer.PerHourRate/hr</h4>
+                    }
+                   
                 </div>
 
                 <p style="white-space:pre-wrap">@freelancer.Intro</p>
@@ -126,3 +144,8 @@
            </div>
 
 </div>
+
+<script>
+   
+</script>
+

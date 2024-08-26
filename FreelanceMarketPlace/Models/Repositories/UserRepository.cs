@@ -158,6 +158,7 @@ namespace FreelanceMarketPlace.Models.Repositories
                                     AddressId = reader.IsDBNull(reader.GetOrdinal("AddressId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("AddressId")),
                                     Role = reader["Role"] as string,
                                     CardId = reader.IsDBNull(reader.GetOrdinal("CardId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("CardId")),
+                                    ProfilePicture = reader.IsDBNull(reader.GetOrdinal("ProfilePicture")) ? null : reader["ProfilePicture"] as string,
                                 };
                             
                         }
@@ -350,8 +351,48 @@ namespace FreelanceMarketPlace.Models.Repositories
                             command.Parameters.AddWithValue("@Phone", user.Phone);
                             command.ExecuteNonQuery();
                             Console.WriteLine("Updated");
-                        }   
-                
+                        }                  
+            }
+        }
+
+        public void EditProfilePicture(string email,string profileUrl)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+                    string updateUserSql = @"
+            UPDATE Users
+            SET ProfilePicture = @ProfilePicture
+            WHERE UserEmail = @UserEmail";
+                    using (SqlCommand command = new SqlCommand(updateUserSql, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserEmail", email);
+                        command.Parameters.AddWithValue("@ProfilePicture", profileUrl);
+
+                        // Execute the command
+                        int rowsAffected = command.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                        {
+                            Console.WriteLine("Profile picture updated successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No record was updated. Check if the email exists.");
+                        }
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                // Handle SQL specific exceptions
+                Console.WriteLine("SQL Error: " + sqlEx.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle general exceptions
+                Console.WriteLine("Error: " + ex.Message);
             }
         }
 
@@ -397,5 +438,7 @@ namespace FreelanceMarketPlace.Models.Repositories
 
             return providedHash == storedHash;
         }
+
+
     }
 }

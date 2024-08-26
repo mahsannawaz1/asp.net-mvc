@@ -16,6 +16,7 @@ namespace FreelanceMarketPlace.Models.Interfaces
 
         public void EditFreelancerProfile(Users user, Freelancer freelancer);
 
+        public void EditProfilePicture(string email, string profileUrl);
         public void EditClientProfile(Users user);
 
     }

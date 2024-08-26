@@ -8,10 +8,9 @@ namespace FreelanceMarketPlace.Models.Repositories
     public class FreelancerRepository : IFreelancerRepository
     {
         private readonly string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FreelanceMarketPlace;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
-        public List<Job> ShowAllJobs()
+        public List<Job> ShowAllJobs(List<string> levels, string sortBy)
         {
             List<Job> jobs = new List<Job>();
-
             try
             {
                 // Open a connection to the database
@@ -23,11 +22,27 @@ namespace FreelanceMarketPlace.Models.Repositories
                     string query = @"
                 SELECT JobId, JobDescription, JobBudget, CreatedOn, UpdatedOn, JobLevel, ClientId, CompletionTime
                 FROM Job";
+                    if (levels != null && levels.Count > 0)
+                    {
+                        query += " WHERE JobLevel IN (" + string.Join(",", levels.Select((_, i) => $"@level{i}")) + ")";
+                    }
+
+                    if (!string.IsNullOrEmpty(sortBy))
+                    {
+                        query += " ORDER BY CreatedOn DESC"; // Ensure there's a space before ORDER BY
+                    }
+
 
                     using (SqlCommand cmd = new SqlCommand(query, connect))
                     {
                         // Add parameter for ClientId
-                       
+                        if (levels != null && levels.Count > 0)
+                        {
+                            for (int i = 0; i < levels.Count; i++)
+                            {
+                                cmd.Parameters.AddWithValue($"@level{i}", levels[i]);
+                            }
+                        }
 
                         // Execute the query and read the results
                         using (SqlDataReader reader = cmd.ExecuteReader())
@@ -49,6 +64,7 @@ namespace FreelanceMarketPlace.Models.Repositories
 
                                 // Add the Job object to the list
                                 jobs.Add(job);
+                                
                             }
                         }
                     }

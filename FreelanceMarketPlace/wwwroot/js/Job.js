@@ -1,5 +1,4 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
-
     const skillButton = document.querySelector(".addSkillButton");
     const input = document.getElementById("skillInput");
     const errorDiv = document.querySelector(".emptySkill");
@@ -41,5 +40,4 @@
         const skills = Array.from(skillList.children).map(span => span.textContent.trim());
         skillsInput.value = JSON.stringify(skills); // Store skills as a JSON string
     }
-   
 });

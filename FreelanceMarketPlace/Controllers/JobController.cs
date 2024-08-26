@@ -164,7 +164,7 @@ namespace FreelanceMarketPlace.Controllers
         }
 
         [HttpGet]
-        public IActionResult ShowAllJobs()
+        public IActionResult ShowAllJobs(string levels = null, string sortBy = "")
         {
             List<Job> jobs = new List<Job>(); // Initialize the list
             bool authToken = HttpContext.Request.Cookies.ContainsKey("AuthToken");
@@ -186,8 +186,12 @@ namespace FreelanceMarketPlace.Controllers
                 {
                     return RedirectToAction("Index", "Home");
                 }
-
-                jobs = _jobRepository.ShowAllJobs(clientId);
+                List<string> levelsList = new List<string>();
+                if (!string.IsNullOrEmpty(levels))
+                {
+                    levelsList = JsonConvert.DeserializeObject<List<string>>(levels);
+                }
+                jobs = _jobRepository.ShowAllJobs(clientId,levelsList,sortBy);
             }
             catch (Exception ex)
             {
@@ -196,7 +200,14 @@ namespace FreelanceMarketPlace.Controllers
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
-            
+
+
+            // Check if the request is made via AJAX
+            if (HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("~/Views/Shared/_AllJobs.cshtml", jobs); // Return the partial view with the filtered jobs
+            }
+
             ViewData["jobs"] = jobs;
             return View();
         }

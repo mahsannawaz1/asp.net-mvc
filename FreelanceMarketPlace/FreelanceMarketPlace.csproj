@@ -8,21 +8,26 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\js\Job.js" />
+    <Content Remove="wwwroot\js\Profile.js" />
   </ItemGroup>
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\css\Job.css" />
     <_ContentIncludedByDefault Remove="wwwroot\js\Job.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\js\Profile.js" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="wwwroot\js\Job.js" />
+    <None Include="wwwroot\js\Profile.js" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FontAwesome" Version="4.7.0" />
     <PackageReference Include="Humanizer" Version="2.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

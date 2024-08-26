@@ -9,12 +9,111 @@
 <div class="container mt-4">
     <h1 class="mb-4 text-center">@ViewData["Title"] </h1>
 
-    @if (jobs != null)
+    @if (jobs != null && jobs.Count > 0)
     {
-        <partial name="_AllJobs" model="@jobs" />
+        <div class="row">
+        <div class="accordion col-md-4 col-lg-3" id="filterAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="sortByHeading">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sortByCollapse" aria-expanded="true" aria-controls="sortByCollapse">
+                        Sort By
+                    </button>
+                </h2>
+                <div id="sortByCollapse" class="accordion-collapse collapse show" aria-labelledby="sortByHeading" data-bs-parent="#filterAccordion">
+                    <div class="accordion-body">
+                        <select class="form-select" aria-label="Sort By" onclick="searchQuery(event)">
+                            <option value="" selected>Relevance</option>
+                            <option value="-createdOn">Newest</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience Level Filter -->
+            <div class="accordion-item mt-3">
+                <h2 class="accordion-header" id="experienceHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#experienceCollapse" aria-expanded="false" aria-controls="experienceCollapse">
+                        Experience Level
+                    </button>
+                </h2>
+                <div id="experienceCollapse" class="accordion-collapse collapse show" aria-labelledby="experienceHeading" data-bs-parent="#filterAccordion">
+                    <div class="accordion-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="entry" id="entryLevel" onclick="searchQuery(event)">
+                            <label class="form-check-label" for="entryLevel">
+                                Entry Level
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="intermediate" id="intermediateLevel" onclick="searchQuery(event)">
+                            <label class="form-check-label" for="intermediateLevel">
+                                Intermediate
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="master" id="expertLevel" onclick="searchQuery(event)">
+                            <label class="form-check-label" for="expertLevel">
+                                Master
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <div class="col-lg-9 col-md-8 row justify-content-sm-center jobs-div">
+                <partial name="_AllJobs" model="@jobs" />
+            </div>
+        
+
+        </div>
     }
     else
     {
         <partial name="_NoDataAlert" />
     }
 </div>
+
+<script>
+    function searchQuery(event) {
+        if (event.target.tagName === "SELECT") {
+            sessionStorage.setItem("sortBy", event.target.value);
+        } else if (event.target.tagName === "INPUT") {
+            let levels = JSON.parse(sessionStorage.getItem("levels")) || [];
+
+            if (levels.length === 0) {
+                levels.push(event.target.value);
+            } else {
+                const valueIndex = levels.indexOf(event.target.value);
+                if (valueIndex !== -1) {
+                    levels.splice(valueIndex, 1); // Remove the value if it exists
+                } else {
+                    levels.push(event.target.value); // Add the value if it does not exist
+                }
+            }
+
+            sessionStorage.setItem("levels", JSON.stringify(levels));
+        }
+
+        const sortBy = sessionStorage.getItem("sortBy");
+        const levels = sessionStorage.getItem("levels");
+
+        $.ajax({
+            url: "/Freelancer/ShowAllJobs",
+            type: "GET",
+            data: { levels, sortBy: sortBy },
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'html',
+            success: function (data) {
+                if(data)
+                    $(".jobs-div").html(data);
+
+                console.log("Nothing")
+            },
+            error: function (xhr, status, error) {
+                console.log("error")
+                console.log('Error:', status, error);
+            }
+        });
+    }
+
+</script>

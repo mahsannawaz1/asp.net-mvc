@@ -6,8 +6,14 @@
     position:absolute;
     width:14px;
     height:14px;
-    top:22px;
-    left:22px;
+    bottom:22px;
+    right:40px;
     border-radius:100%;
     border:1px solid #fff;
+}
+.avatar-img{
+    width:200px;
+    height:200px;
+    border:2px solid lightgrey;
+    object-fit:contain;
 }
